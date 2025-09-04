@@ -5,704 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JTSC EXAMINATION</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .quiz-option.selected {
-            background-color: #3b82f6;
-            color: white;
-            border-color: #2563eb;
-        }
-        .quiz-option.correct {
-            background-color: #22c55e !important;
-            color: white !important;
-            border-color: #16a34a !important;
-        }
-        .quiz-option.incorrect {
-            background-color: #ef4444 !important;
-            color: white !important;
-            border-color: #dc2626 !important;
-        }
-
-        /* --- Question Map Styles --- */
-        .question-map-btn {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            width: 100%;
-            aspect-ratio: 1 / 1;
-            border: 2px solid #e5e7eb; /* gray-200 */
-            border-radius: 0.5rem; /* rounded-lg */
-            font-weight: 600; /* semibold */
-            transition: all 0.2s ease-in-out;
-            cursor: pointer;
-        }
-        .question-map-btn:hover {
-            background-color: #f3f4f6; /* gray-100 */
-            border-color: #9ca3af; /* gray-400 */
-        }
-        .question-map-btn.answered {
-            background-color: #dbeafe; /* blue-100 */
-            border-color: #60a5fa; /* blue-400 */
-            color: #1e40af; /* blue-800 */
-        }
-        .question-map-btn.current {
-            background-color: #3b82f6; /* blue-500 */
-            border-color: #1d4ed8; /* blue-700 */
-            color: white;
-            transform: scale(1.1);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-
-        /* Custom scrollbar */
-        #result-details::-webkit-scrollbar,
-        #question-map-container::-webkit-scrollbar {
-            width: 8px;
-        }
-        #result-details::-webkit-scrollbar-track,
-        #question-map-container::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 10px;
-        }
-        #result-details::-webkit-scrollbar-thumb,
-        #question-map-container::-webkit-scrollbar-thumb {
-            background: #a8a29e; /* stone-400 */
-            border-radius: 10px;
-        }
-        #result-details::-webkit-scrollbar-thumb:hover,
-        #question-map-container::-webkit-scrollbar-thumb:hover {
-            background: #78716c; /* stone-500 */
-        }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
+<body id="main-body" class="flex items-center justify-center min-h-screen p-4">
 
-    <!-- Main Container -->
-    <div id="quiz-container" class="w-full max-w-4xl bg-white p-6 sm:p-8 rounded-2xl shadow-lg transition-all duration-500">
+    <div id="quiz-container" class="w-full max-w-4xl p-6 sm:p-8 rounded-2xl shadow-2xl">
         
-        <!-- Screen: Exam Selection -->
-        <div id="exam-selection-screen">
-            <h1 class="text-3xl font-bold text-center text-gray-800 mb-8">Bộ đề thi tham khảo - chứng chỉ đấu thầu</h1>
-            <div id="tabs-bar" class="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <button data-exam-id="exam1" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-white border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors duration-300">
+        <div id="landing-screen" class="text-center">
+            <img src="./image/JTSC-Logo.png" alt="Company Logo" class="mx-auto h-20 mb-6">
+            <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-50 mb-4 text-glow">WELCOME TO JTSC EXAMINATION</h1>
+            <p class="text-black-300 max-w-2xl mx-auto mb-8">Nền tảng thi thử chứng chỉ đấu thầu nội bộ của Công ty Cổ phần Dịch vụ Công nghệ Viễn thông JTSC.</p>
+            <img src="./image/Cty.png" alt="Banner Image" class="w-full h-auto rounded-lg shadow-xl mb-8 border-2 border-slate-700">
+            <button id="enter-quiz-btn" class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition-transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/50 shadow-lg text-lg">
+                Bắt đầu làm bài
+            </button>
+        </div>
+
+        <div id="exam-selection-screen" class="hidden">
+            <h1 class="text-3xl font-bold text-center text-black-100 mb-8 text-glow">Chọn Bài Thi</h1>
+            <div id="tabs-bar" class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <button data-exam-id="exam1" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
                     Bài thi số 1
                 </button>
-                <button data-exam-id="exam2" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-white border-2 border-blue-500 text-blue-500 hover:bg-blue-500 hover:text-white transition-colors duration-300">
+                <button data-exam-id="exam2" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
                     Bài thi số 2
+                </button>
+                <button data-exam-id="exam3" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
+                    Bài thi số 3
+                </button>
+                 <button data-exam-id="exam4" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
+                    Bài thi số 4
+                </button>
+                 <button data-exam-id="exam5" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
+                    Bài thi số 5
+                </button>
+                <button data-exam-id="random" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
+                    Bài thi ngẫu nhiên
+                </button>
+            </div>
+            <div class="text-center mt-8">
+                <button id="back-to-landing-btn" class="text-gray-400 hover:text-black font-semibold transition-colors">
+                    &#8592; Quay lại trang chủ
                 </button>
             </div>
         </div>
 
-        <!-- Screen: Start Quiz -->
         <div id="start-screen" class="hidden text-center">
-            <h1 id="start-title" class="text-3xl font-bold text-gray-800 mb-4"></h1>
-            <p class="text-center text-gray-600 mb-8">Bài thi gồm <span id="question-count-start"></span> câu hỏi. Chúc bạn làm bài tốt!</p>
+            <h1 id="start-title" class="text-3xl font-bold text-black-50 mb-4 text-glow"></h1>
+            <p class="text-center text-black-300 mb-8">Bài thi gồm <span id="question-count-start"></span> câu hỏi. Chúc bạn làm bài tốt!</p>
             <div class="flex flex-col space-y-4">
-                 <button id="start-btn" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-md">
+                <button id="start-btn" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/50 shadow-md">
                     Bắt Đầu Làm Bài
                 </button>
-                <button id="back-to-selection-btn" class="w-full bg-gray-200 text-gray-700 font-semibold py-3 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-gray-300">
+                <button id="back-to-selection-btn" class="w-full bg-slate-700 text-gray-200 font-semibold py-3 px-6 rounded-lg hover:bg-slate-600 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-slate-500/50">
                     Chọn bài thi khác
                 </button>
             </div>
         </div>
 
-        <!-- Screen: Quiz In Progress -->
         <div id="quiz-screen" class="hidden">
-            <div class="md:grid md:grid-cols-3 md:gap-8">
-                <!-- Main Quiz Content -->
-                <div class="md:col-span-2">
-                    <div class="mb-6">
+             <div class="md:grid md:grid-cols-4 md:gap-8 h-full">
+                <div class="md:col-span-3 flex flex-col h-full">
+                    <div class="mb-6 flex-shrink-0">
                         <div class="flex justify-between items-center mb-2">
-                            <h2 class="text-lg font-semibold text-blue-600">Câu hỏi <span id="question-number"></span>/<span id="total-questions"></span></h2>
-                            <div id="timer" class="text-lg font-bold text-gray-700">00:00</div>
+                            <h2 class="text-lg font-semibold text-blue-400">Câu hỏi <span id="question-number"></span>/<span id="total-questions"></span></h2>
+                            <div id="timer" class="text-lg font-bold text-gray-50">00:00</div>
                         </div>
-                         <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                        <div class="w-full bg-slate-700 rounded-full h-2.5">
+                            <div id="progress-bar" class="bg-blue-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
                         </div>
                     </div>
 
-                    <p id="question-text" class="text-xl font-medium text-gray-800 mb-6 min-h-[100px]"></p>
+                    <p id="question-text" class="text-xl font-medium text-black-100 mb-6"></p>
                     
-                    <div id="options-container" class="space-y-3">
-                        <!-- Dynamic options here -->
-                    </div>
+                    <div id="options-container" class="space-y-3 overflow-y-auto flex-grow pr-2">
+                        </div>
 
-                    <div class="mt-8 flex justify-between items-center">
-                        <button id="prev-btn" class="bg-gray-200 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-gray-300 disabled:opacity-50 disabled:cursor-not-allowed">
+                    <div class="mt-8 flex justify-between items-center flex-shrink-0">
+                        <button id="prev-btn" class="bg-slate-700 text-gray-200 font-semibold py-2 px-6 rounded-lg hover:bg-slate-600 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-slate-500/50 disabled:opacity-50 disabled:cursor-not-allowed">
                             Câu Trước
                         </button>
-                         <div class="flex items-center space-x-4">
-                            <button id="next-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-md">
+                        <div class="flex items-center space-x-4">
+                            <button id="next-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/50 shadow-md">
                                 Câu Tiếp
                             </button>
-                             <button id="submit-btn" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-green-300 shadow-md">
+                            <button id="submit-btn" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-green-400/50 shadow-md">
                                 Nộp Bài
                             </button>
                         </div>
                     </div>
                 </div>
-                <!-- Question Map -->
-                <div class="md:col-span-1 mt-8 md:mt-0">
-                    <h3 class="text-lg font-semibold mb-4 text-center text-gray-700">Bảng câu hỏi</h3>
-                    <div id="question-map-container" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-5 gap-2 max-h-[400px] overflow-y-auto p-2 bg-gray-50 rounded-lg">
-                        <!-- Question map buttons will be generated here -->
-                    </div>
+                <div class="md:col-span-1 mt-8 md:mt-0 flex flex-col h-full">
+                    <h3 class="text-lg font-semibold mb-4 text-center text-black-200 flex-shrink-0">Bảng câu hỏi</h3>
+                    <div id="question-map-container" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-6 gap-2 overflow-y-auto p-2 bg-slate-800/50 rounded-lg flex-grow">
+                        </div>
                 </div>
             </div>
         </div>
         
-        <!-- Screen: Result -->
         <div id="result-screen" class="hidden text-center">
-            <h2 class="text-3xl font-bold text-gray-800 mb-4">Hoàn Thành Bài Thi!</h2>
-            <p class="text-xl text-gray-600 mb-2">Điểm của bạn:</p>
-            <p class="text-5xl font-extrabold text-blue-600 mb-6"><span id="score"></span>/<span id="total-score"></span></p>
-            <div id="result-details" class="mt-8 text-left border-t pt-6 space-y-6 max-h-[50vh] overflow-y-auto pr-4">
-                <!-- Result details here -->
-            </div>
-             <div class="mt-8 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <button id="restart-btn" class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-md">
+            <h2 class="text-3xl font-bold text-black-50 mb-4 text-glow">Hoàn Thành Bài Thi!</h2>
+            <p class="text-xl text-black-50 mb-2">Điểm của bạn:</p>
+            <p class="text-5xl font-extrabold text-blue-400 mb-6"><span id="score"></span>/<span id="total-score"></span></p>
+            <div id="result-details" class="mt-8 text-left border-t border-slate-700 pt-6 space-y-6 max-h-[50vh] overflow-y-auto pr-4">
+                 </div>
+            <div class="mt-8 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+                <button id="restart-btn" class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/50 shadow-md">
                     Làm Lại
                 </button>
-                 <button id="go-home-btn" class="w-full sm:w-auto bg-gray-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-gray-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-gray-300 shadow-md">
+                <button id="go-home-btn" class="w-full sm:w-auto bg-slate-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-slate-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-slate-500/50 shadow-md">
                     Chọn bài thi khác
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Confirmation Modal -->
-    <div id="confirm-modal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full flex items-center justify-center p-4 z-50">
-        <div class="bg-white p-8 rounded-lg shadow-xl w-full max-w-sm text-center transform transition-all" id="modal-content">
-            <h3 class="text-xl font-bold mb-4">Xác nhận nộp bài</h3>
-            <p class="text-gray-600 mb-8">Bạn có chắc chắn muốn nộp bài không?</p>
+    <div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-800 border border-slate-700 p-8 rounded-lg shadow-xl w-full max-w-sm text-center transform transition-all" id="modal-content">
+            <h3 class="text-xl font-bold mb-4 text-gray-50">Xác nhận nộp bài</h3>
+            <p class="text-gray-300 mb-8">Bạn có chắc chắn muốn nộp bài không?</p>
             <div class="flex justify-center space-x-4">
-                <button id="modal-cancel-btn" class="w-full bg-gray-200 text-gray-700 font-semibold py-2 px-6 rounded-lg hover:bg-gray-300 transition-colors duration-300">Hủy</button>
+                <button id="modal-cancel-btn" class="w-full bg-slate-600 text-gray-200 font-semibold py-2 px-6 rounded-lg hover:bg-slate-500 transition-colors duration-300">Hủy</button>
                 <button id="modal-confirm-btn" class="w-full bg-green-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">Xác nhận</button>
             </div>
         </div>
     </div>
 
-    <script>
-        // --- DATA SOURCE ---
-        const allExams = {
-            exam1: {
-                title: "Bài Thi Trắc Nghiệm số 1",
-                questions: [
-                    { question: "Đối tượng nào sau đây không thuộc phạm vi áp dụng của Luật Đấu thầu?", options: ["Cơ quan nhà nước sử dụng vốn ngân sách nhà nước", "Doanh nghiệp nhà nước thực hiện dự án đầu tư sử dụng vốn ngân sách nhà nước", "Doanh nghiệp do doanh nghiệp nhà nước nắm 100% vốn điều lệ thực hiện dự án đầu tư không sử dụng vốn ngân sách nhà nước", "Tổ chức chính trị - xã hội sử dụng NSNN, nguồn thu hợp pháp của tổ chức để thực hiện dự án đầu tư"], answer: "Doanh nghiệp do doanh nghiệp nhà nước nắm 100% vốn điều lệ thực hiện dự án đầu tư không sử dụng vốn ngân sách nhà nước" },
-                    { question: "Điều kiện nào sau đây KHÔNG phải là điều kiện về tư cách hợp lệ của nhà thầu là tổ chức?", options: ["Có năng lực và kinh nghiệm để thực hiện gói thầu", "Hạch toán tài chính độc lập", "Không đang trong quá trình giải thể hoặc bị thu hồi giấy chứng nhận đăng ký doanh nghiệp", "Có đăng ký thành lập, hoạt động theo pháp luật Việt Nam hoặc nước ngoài"], answer: "Có năng lực và kinh nghiệm để thực hiện gói thầu" },
-                    { question: "Nhà thầu tham dự thầu phải bảo đảm cạnh tranh trong đấu thầu với:", options: ["Chủ đầu tư", "Nhà thầu tư vấn lập HSMT cho gói thầu đó", "Nhà thầu tư vấn thẩm định KQLCNT cho gói thầu đó", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Ai chịu trách nhiệm đăng tải thông tin về năng lực, kinh nghiệm của nhà thầu trên Hệ thống mạng đấu thầu quốc gia?", options: ["Trung tâm đấu thầu qua mạng Quốc gia", "Chủ đầu tư", "Người có thẩm quyền", "Nhà thầu"], answer: "Nhà thầu" },
-                    { question: "Đối tượng nào sau đây KHÔNG được hưởng ưu đãi trong lựa chọn nhà thầu?", options: ["Doanh nghiệp nhà nước", "Nhà thầu là doanh nghiệp khoa học và công nghệ", "Hàng hóa có xuất xứ Việt Nam", "Nhà thầu là doanh nghiệp nhỏ, siêu nhỏ"], answer: "Doanh nghiệp nhà nước" },
-                    { question: "Đối với gói thầu áp dụng hình thức đấu thầu rộng rãi, nhà thầu tham dự thầu gói thầu xây lắp phải độc lập về pháp lý và tài chính với bên nào sau đây?", options: ["Nhà thầu khác cùng tham dự thầu", "Nhà cung cấp vật tư", "Chủ đầu tư", "Nhà thầu phụ cùng tham dự thầu gói thầu đó"], answer: "Chủ đầu tư" },
-                    { question: "Trường hợp, nhà thầu thuộc diện được hưởng nhiều loại ưu đãi, việc tính ưu đãi được thực hiện như thế nào?", options: ["Chỉ được hưởng một loại ưu đãi có lợi nhất cho nhà thầu", "Tùy thuộc vào quyết định của chủ đầu tư", "Cộng gộp tất cả các ưu đãi", "Xin ý kiến của Người có thẩm quyền"], answer: "Chỉ được hưởng một loại ưu đãi có lợi nhất cho nhà thầu" },
-                    { question: "Chi phí lập hoặc thẩm định kế hoạch tổng thể lựa chọn nhà thầu được tính bằng bao nhiêu phần trăm chi phí lập báo cáo nghiên cứu khả thi?", options: ["1%", "2%", "0,5%", "0,1%"], answer: "0,5%" },
-                    { question: "Phương thức một giai đoạn một túi hồ sơ KHÔNG áp dụng cho trường hợp nào?", options: ["Gói thầu phi tư vấn được tổ chức theo hình thức chào hàng cạnh tranh", "Gói thầu xây lắp áp dụng hình thức chỉ định thầu theo quy trình thông thường", "Gói thầu mua sắm hàng hóa được tổ chức đấu thầu rộng rãi", "Gói thầu tư vấn được tổ chức đấu thầu rộng rãi"], answer: "Gói thầu tư vấn được tổ chức đấu thầu rộng rãi" },
-                    { question: "Sau khi có quyết định phê duyệt kết quả lựa chọn nhà thầu, chủ đầu tư phải đăng tải thông tin về kết quả lựa chọn nhà thầu trong thời hạn bao lâu?", options: ["10 ngày", "05 ngày làm việc", "01 ngày làm việc", "03 ngày làm việc"], answer: "05 ngày làm việc" },
-                    { question: "Nhà thầu tham dự gói thầu EPC được tổ chức đấu thầu rộng rãi phải độc lập về pháp lý và tài chính với bên nào sau đây?", options: ["Nhà thầu phụ", "Nhà thầu cung cấp vật tư cho gói thầu", "Nhà thầu khác cùng tham dự thầu", "Nhà thầu lập, thẩm tra thiết kế FEED"], answer: "Nhà thầu lập, thẩm tra thiết kế FEED" },
-                    { question: "Hồ sơ đề xuất về tài chính của nhà thầu không vượt qua bước đánh giá về kỹ thuật sẽ được xử lý như thế nào?", options: ["Hủy bỏ ngay sau khi có Quyết định phê duyệt danh sách nhà thầu đạt kỹ thuật", "Công khai trên Hệ thống mạng đấu thầu quốc gia", "Lưu trữ vĩnh viễn tại Chủ đầu tư", "Được trả lại nguyên trạng cho nhà thầu theo thời hạn quy định"], answer: "Được trả lại nguyên trạng cho nhà thầu theo thời hạn quy định" },
-                    { question: "Thông tin nào sau đây phải được đăng tải công khai trên Hệ thống mạng đấu thầu quốc gia?", options: ["Thông tin về tài sản nhà thầu", "Thông tin cá nhân nhà thầu", "Thông tin về hợp đồng lao động của nhà thầu", "Thông tin về nhà thầu vi phạm, không bảo đảm uy tín"], answer: "Thông tin về nhà thầu vi phạm, không bảo đảm uy tín" },
-                    { question: "Cơ sở dữ liệu quốc gia về nhà thầu KHÔNG bao gồm thông tin nào sau đây?", options: ["Thông tin về tên địa chỉ của nhà thầu", "Thông tin về catalog hàng hóa mà nhà thầu có khả năng cung cấp", "Thông tin về số lượng lao động của nhà thầu", "Thông tin về năng lực, kinh nghiệm của nhà thầu"], answer: "Thông tin về catalog hàng hóa mà nhà thầu có khả năng cung cấp" },
-                    { question: "Thẩm quyền phê duyệt kế hoạch lựa chọn nhà thầu đối với dự án?", options: ["Cơ quan quản lý nhà nước về đấu thầu", "Người có thẩm quyền", "Chủ đầu tư nếu được người có thẩm quyền ủy quyền", "Chủ đầu tư"], answer: "Chủ đầu tư" },
-                    { question: "Điều kiện nào sau đây KHÔNG phải là điều kiện tổ chức đấu thầu quốc tế để lựa chọn nhà thầu?", options: ["Gói thầu mà nhà thầu trong nước không đáp ứng yêu cầu", "Gói thầu mua sắm hàng hóa trong nước không sản xuất được", "Gói thầu mua sắm hàng hóa đã được nhập khẩu và chào bán tại Việt Nam", "Nhà tài trợ vốn yêu cầu đấu thầu quốc tế"], answer: "Gói thầu mua sắm hàng hóa đã được nhập khẩu và chào bán tại Việt Nam" },
-                    { question: "Ngôn ngữ sử dụng trong đấu thầu quốc tế là gì?", options: ["Tiếng Việt", "Tiếng Trung", "Tiếng Pháp", "Tiếng Anh hoặc song ngữ: tiếng Việt và tiếng Anh"], answer: "Tiếng Anh hoặc song ngữ: tiếng Việt và tiếng Anh" },
-                    { question: "Đối với đấu thầu trong nước, nhà thầu được chào thầu bằng loại tiền nào?", options: ["Đồng Việt Nam (VND)", "Nhân dân tệ (CNY) hoặc đồng Việt Nam", "Đô la Mỹ (USD) hoặc đồng Việt Nam", "Euro (EUR) hoặc đồng Việt Nam"], answer: "Đồng Việt Nam (VND)" },
-                    { question: "Biện pháp nào sau đây KHÔNG phải là biện pháp bảo đảm dự thầu?", options: ["Ký hợp đồng nguyên tắc", "Đặt cọc", "Nộp thư bảo lãnh của tổ chức tín dụng", "Nộp giấy chứng nhận bảo hiểm bảo lãnh"], answer: "Ký hợp đồng nguyên tắc" },
-                    { question: "Chào giá trực tuyến là:", options: ["Việc nhà thầu gửi báo giá qua email", "Việc chủ đầu tư công bố giá trên website", "Việc nhà thầu gửi báo giá qua bưu điện", "Quá trình lặp lại nhiều lần việc nhà thầu sử dụng phương tiện điện tử để đưa ra mức giá mới trên Hệ thống mạng đấu thầu quốc gia"], answer: "Quá trình lặp lại nhiều lần việc nhà thầu sử dụng phương tiện điện tử để đưa ra mức giá mới trên Hệ thống mạng đấu thầu quốc gia" },
-                    { question: "Tỷ lệ cổ phần, vốn góp giữa các bên trong liên danh được xác định tại thời điểm nào?", options: ["Khi phê duyệt kết quả lựa chọn nhà thầu", "Khi ký hợp đồng", "Trước thời điểm đóng thầu", "Sau khi mở thầu"], answer: "Trước thời điểm đóng thầu" },
-                    { question: "Trường hợp tất cả các nhà thầu tham dự thầu đều được hưởng ưu đãi như nhau thì:", options: ["Chỉ tính ưu đãi cho nhà thầu có giá thấp nhất", "Không cần tính ưu đãi để so sánh, xếp hạng", "Chỉ tính ưu đãi cho nhà thầu trong nước", "Vẫn phải cộng ưu đãi vào giá dự thầu"], answer: "Không cần tính ưu đãi để so sánh, xếp hạng" },
-                    { question: "Chi phí nào sau đây nhà thầu phải chịu trong lựa chọn nhà thầu?", options: ["Chi phí thẩm định kết quả lựa chọn nhà thầu", "Chi phí thuê tư vấn đánh giá HSDT", "Chi phí nộp hồ sơ dự thầu", "Chi phí đăng tải thông tin về đấu thầu"], answer: "Chi phí nộp hồ sơ dự thầu" },
-                    { question: "Hành vi nào sau đây bị cấm trong hoạt động đấu thầu?", options: ["Đưa, nhận, môi giới hối lộ", "Gian lận, thông thầu", "Cản trở hoạt động đấu thầu", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Trường hợp nào sau đây KHÔNG là lý do hủy thầu đối với lựa chọn nhà thầu?", options: ["Thay đổi về mục tiêu, phạm vi đầu tư trong quyết định đầu tư đã được phê duyệt", "Hồ sơ mời thầu không tuân thủ quy định của Luật Đấu thầu", "Nhà thầu trúng thầu thực hiện hành vi bị cấm", "Tất cả hồ sơ dự thầu không đáp ứng yêu cầu"], answer: "Nhà thầu trúng thầu thực hiện hành vi bị cấm" },
-                    { question: "Đấu thầu hạn chế được áp dụng khi nào?", options: ["Khi nhà tài trợ yêu cầu tổ chức đấu thầu quốc tế", "Khi chủ đầu tư muốn rút ngắn thời gian đấu thầu", "Gói thầu có yêu cầu đặc thù về kỹ thuật mà chỉ có một số nhà thầu đáp ứng yêu cầu của gói thầu", "Khi gói thầu có giá trị trên 100 tỷ đồng"], answer: "Gói thầu có yêu cầu đặc thù về kỹ thuật mà chỉ có một số nhà thầu đáp ứng yêu cầu của gói thầu" },
-                    { question: "Chào hàng cạnh tranh không áp dụng cho gói thầu thuộc lĩnh vực nào?", options: ["Xây lắp đơn giản", "Mua sắm hàng hóa thông dụng", "Phi tư vấn đơn giản", "Tư vấn"], answer: "Tư vấn" },
-                    { question: "Điều kiện để áp dụng mua sắm trực tiếp là gì?", options: ["Nhà thầu đã trúng thầu qua đấu thầu rộng rãi hoặc hạn chế và thời gian từ khi ký hợp đồng trước đó đến ngày phê duyệt kết quả MSTT không quá 12 tháng", "Khối lượng mua sắm không vượt 130% so với hợp đồng trước đó", "Đơn giá không vượt đơn giá của phần việc tương tự thuộc hợp đồng trước đó", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Hình thức tự thực hiện yêu cầu chủ đầu tư phải đáp ứng điều kiện gì?", options: ["Có năng lực kỹ thuật, tài chính và kinh nghiệm đáp ứng yêu cầu của gói thầu và có phương án khả thi huy động nhân sự, máy móc, thiết bị đáp ứng yêu cầu về tiến độ thực hiện gói thầu", "Có ít nhất 5 năm kinh nghiệm trong lĩnh vực liên quan", "Chỉ áp dụng cho gói thầu dưới 10 tỷ đồng", "Được cơ quan cấp trên trực tiếp phê duyệt"], answer: "Có năng lực kỹ thuật, tài chính và kinh nghiệm đáp ứng yêu cầu của gói thầu và có phương án khả thi huy động nhân sự, máy móc, thiết bị đáp ứng yêu cầu về tiến độ thực hiện gói thầu" },
-                    { question: "Đối tượng nào được tham gia thực hiện gói thầu theo hình thức tham gia thực hiện của cộng đồng?", options: ["Cộng đồng dân cư, tổ, nhóm thợ đủ năng lực tại địa phương nơi có gói thầu được giao thực hiện", "Doanh nghiệp nhà nước đóng trên địa bàn", "Cá nhân có chứng chỉ hành nghề xây dựng", "Tổ chức phi chính phủ nước ngoài"], answer: "Cộng đồng dân cư, tổ, nhóm thợ đủ năng lực tại địa phương nơi có gói thầu được giao thực hiện" },
-                    { question: "Đàm phán giá được áp dụng cho trường hợp nào?", options: ["Tất cả các gói thầu thuộc ngành y tế", "Mua biệt dược gốc, sinh phẩm tham chiếu", "Dự án sử dụng vốn vay nước ngoài", "Gói thầu xây lắp có giá trên 100 tỷ đồng"], answer: "Mua biệt dược gốc, sinh phẩm tham chiếu" },
-                    { question: "Lựa chọn nhà thầu trong trường hợp đặc biệt áp dụng khi nào?", options: ["Đối với gói thầu thuộc dự án, dự toán mua sắm có một hoặc một số điều kiện đặc thù về quy trình, thủ tục, tiêu chí lựa chọn nhà thầu, điều kiện ký kết và thực hiện hợp đồng", "Khi gói thầu có giá trị dưới 10 tỷ đồng", "Khi có sự đồng ý bằng văn bản của thủ tướng chính phủ", "Khi chủ đầu tư là doanh nghiệp nhà nước"], answer: "Đối với gói thầu thuộc dự án, dự toán mua sắm có một hoặc một số điều kiện đặc thù về quy trình, thủ tục, tiêu chí lựa chọn nhà thầu, điều kiện ký kết và thực hiện hợp đồng" },
-                    { question: "Nội dung kế hoạch tổng thể lựa chọn nhà thầu KHÔNG bao gồm:", options: ["Phân tích, tham vấn thị trường", "Kế hoạch bố trí vốn để thực hiện dự toán mua sắm", "Đánh giá năng lực, nguồn lực của chủ đầu tư", "Phân tích bối cảnh thực hiện dự án"], answer: "Kế hoạch bố trí vốn để thực hiện dự toán mua sắm" },
-                    { question: "Thông tin về vi phạm của nhà thầu được cập nhật vào:", options: ["Cơ sở dữ liệu quốc gia về nhà thầu trên Hệ thống mạng đấu thầu quốc gia", "Trang thông tin của Bộ Tài chính", "Trang thông tin của chủ đầu tư", "Cổng dịch vụ công Quốc gia"], answer: "Cơ sở dữ liệu quốc gia về nhà thầu trên Hệ thống mạng đấu thầu quốc gia" },
-                    { question: "Chủ đầu tư phải công khai kết quả thực hiện hợp đồng của nhà thầu trên:", options: ["Trang thông tin của Bộ Xây dựng", "Tất cả các phương án trên", "Hệ thống mạng đấu thầu quốc gia", "Trang thông tin của chủ đầu tư"], answer: "Hệ thống mạng đấu thầu quốc gia" },
-                    { question: "Đối với các gói thầu thông thường, thành viên tổ chuyên gia phải đáp ứng yêu cầu:", options: ["Tốt nghiệp đại học trở lên", "Có tối thiểu 03 năm công tác trong lĩnh vực liên quan", "Có chứng chỉ nghiệp vụ chuyên môn về đấu thầu", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Giá gói thầu có thể được lập căn cứ vào thông tin nào sau đây?", options: ["Dự toán gói thầu được duyệt", "Kết quả lựa chọn nhà thầu đối với hàng hóa, dịch vụ tương tự trong thời gian tối đa 12 tháng trước ngày trình kế hoạch lựa chọn nhà thầu", "Báo giá của hàng hóa, dịch vụ", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Giá gói thầu được cập nhật trong thời hạn bao nhiêu ngày trước ngày mở thầu nếu cần thiết?", options: ["14 ngày", "28 ngày", "7 ngày", "30 ngày"], answer: "28 ngày" },
-                    { question: "Trường hợp người có chủ đầu tư cho cơ quan, đơn vị trực thuộc thực hiện việc thẩm định kết quả lựa chọn nhà thầu, chi phí thẩm định được xác định bằng bao nhiêu phần trăm giá gói thầu?", options: ["0,05%", "0,15%", "0,1%", "0,2%"], answer: "0,1%" },
-                    { question: "Chủ đầu tư chịu trách nhiệm đăng tải kế hoạch lựa chọn nhà thầu trên Hệ thống mạng đấu thầu quốc gia trong thời hạn bao lâu kể từ ngày văn bản được ban hành?", options: ["03 ngày làm việc", "10 ngày", "07 ngày làm việc", "05 ngày làm việc"], answer: "05 ngày làm việc" },
-                    { question: "Việc phân chia gói thầu căn cứ vào:", options: ["Quy mô, tính chất các công việc", "Tiến độ thực hiện dự án", "Kết quả phân tích, tham vấn thị trường", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Tổ chuyên gia trong lựa chọn nhà thầu được thành lập như thế nào?", options: ["Chủ đầu tư quyết định thành lập tổ chuyên gia đáp ứng quy định", "Người có thẩm quyền quyết định thành lập tổ chuyên gia", "Đơn vị tư vấn quyết định thành lập tổ chuyên gia", "Đáp án A và đáp án C đều đúng"], answer: "Đáp án A và đáp án C đều đúng" },
-                    { question: "Trường hợp không lập kế hoạch tổng thể lựa chọn nhà thầu, chủ đầu tư có thể tiến hành phân tích, tham vấn thị trường để:", options: ["Lập kế hoạch lựa chọn nhà thầu", "Lập hồ sơ mời thầu", "Lập hồ sơ yêu cầu", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Điều kiện để lựa chọn nhà thầu trong trường hợp đặc biệt là:", options: ["Gói thầu thuộc dự án, dự toán mua sắm có một hoặc một số điều kiện đặc thù", "Gói thầu thuộc dự án đầu tư công.", "Gói thầu đặc thù về phát triển khoa học, công nghệ", "Đáp án A và đáp án C đều đúng."], answer: "Đáp án A và đáp án C đều đúng." },
-                    { question: "Phương thức lựa chọn nhà thầu đối với gói thầu xây lắp không yêu cầu kỹ thuật cao có giá gói thầu 25 tỷ đồng là:", options: ["Một giai đoạn hai túi hồ sơ.", "Đáp án A và đáp án B đều đúng.", "Một giai đoạn một túi hồ sơ.", "Do Người có thẩm quyền quyết định"], answer: "Một giai đoạn một túi hồ sơ." },
-                    { question: "Phương thức một giai đoạn hai túi hồ sơ được áp dụng trong trường hợp nào sau đây?", options: ["Gói thầu mua sắm hàng hóa áp dụng hình thức mua sắm trực tiếp", "Gói thầu xây lắp áp dụng hình thức chào hàng cạnh tranh", "Gói thầu phi tư vấn áp dụng hình thức chỉ định thầu", "Gói thầu dịch vụ tư vấn áp dụng hình thức đấu thầu rộng rãi"], answer: "Gói thầu dịch vụ tư vấn áp dụng hình thức đấu thầu rộng rãi" },
-                    { question: "Thẩm quyền phê duyệt kế hoạch tổng thể lựa chọn nhà thầu đối với dự án?", options: ["Cơ quan quản lý nhà nước về đấu thầu", "Chủ đầu tư nếu được người có thẩm quyền ủy quyền", "Chủ đầu tư", "Người có thẩm quyền"], answer: "Người có thẩm quyền" },
-                    { question: "Hồ sơ dự thầu không bắt buộc phải có tài liệu, văn bản nào sau đây, trừ trường hợp có quy định cụ thể tại hồ sơ mời thầu?", options: ["Tài liệu chứng minh năng lực, kinh nghiệm của nhà thầu", "Đơn dự thầu", "Thỏa thuận liên danh", "Giấy phép bán hàng"], answer: "Giấy phép bán hàng" },
-                    { question: "Đối với gói thầu xây lắp, khi nào nhà thầu không được phép thay thế nhân sự chủ chốt trong hồ sơ dự thầu?", options: ["Khi nhân sự nhà thầu chào trong HSDT không đáp ứng yêu cầu", "Khi nhân sự chuyển công tác", "Khi nhân sự bị ốm", "Trong mọi trường hợp nếu kê khai nhân sự không trung thực"], answer: "Trong mọi trường hợp nếu kê khai nhân sự không trung thực" },
-                    { question: "Trong gói thầu dịch vụ tư vấn, thông tin về uy tín của nhà thầu được sử dụng để", options: ["Đánh giá về kỹ thuật", "Đánh giá về năng lực, kinh nghiệm", "Đánh giá tư cách hợp lệ của nhà thầu", "Loại nhà thầu đã bị đánh giá về uy tín"], answer: "Đánh giá về kỹ thuật" },
-                    { question: "Gói thầu lĩnh vực dịch vụ tư vấn, sử dụng thang điểm 1.000 để xây dựng tiêu chuẩn đánh giá về kỹ thuật, vậy số điểm đối với tiêu chí đánh giá về uy tín của nhà thầu là bao nhiêu điểm:", options: ["50 điểm", "Tối thiểu 100 điểm", "Tối thiểu 50 điểm", "100 điểm"], answer: "50 điểm" },
-                    { question: "Một nhà thầu bị phát hiện cố tình kê khai thông tin không trung thực trong hồ sơ dự thầu làm sai lệch kết quả gói thầu", options: ["Bị cấm tham gia hoạt động đấu thầu", "Bị đăng tải thông tin vi phạm trên cổng thông tin điện tử của Chính Phủ", "Bị phạt tiền", "Bị cảnh cáo"], answer: "Bị cấm tham gia hoạt động đấu thầu" },
-                    { question: "Việc đánh giá hồ sơ dự thầu phải căn cứ vào:", options: ["Tiêu chuẩn đánh giá hồ sơ dự thầu", "Yêu cầu khác trong hồ sơ mời thầu", "Hồ sơ dự thầu đã nộp", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Trường hợp nhà thầu có thư giảm giá, việc sửa lỗi và hiệu chỉnh sai lệch được thực hiện trên cơ sở nào?", options: ["Giá dự thầu chưa trừ đi giá trị giảm giá", "Giá dự thầu chưa bao gồm thuế", "Giá dự thầu đã cộng thêm thuế", "Giá dự thầu đã trừ giá trị giảm giá"], answer: "Giá dự thầu chưa trừ đi giá trị giảm giá" },
-                    { question: "Doanh nghiệp nhà nước A là tập đoàn kinh tế nhà nước hiện đang tổ chức 01 gói thầu hỗn hợp PC (xây lắp và cung cấp, lắp đặt thiết bị). Tình huống: công ty xây lắp X là doanh nghiệp do Tập đoàn A thành lập và nắm giữ 70 % vốn điều lệ tham dự gói thầu nêu trên. Việc đánh giá tiêu chí đảm bảo cạnh tranh trong đấu thầu như thế nào?", options: ["Nếu công ty X đáp ứng các yêu cầu về bảo đảm cạnh tranh với các đơn vị tư vấn của gói thầu thì Công ty X được phép tham dự thầu", "Công ty X không đáp ứng yêu cầu về đảm bảo cạnh tranh trong đấu thầu.", "Công ty X luôn được phép tham dự thầu và luôn được đánh giá đảm bảo cạnh tranh trong đấu thầu.", "Công ty X đáp ứng yêu cầu về đảm bảo cạnh tranh trong đấu thầu."], answer: "Nếu công ty X đáp ứng các yêu cầu về bảo đảm cạnh tranh với các đơn vị tư vấn của gói thầu thì Công ty X được phép tham dự thầu" },
-                    { question: "Kế hoạch tổng thể lựa chọn nhà thầu cho dự án phải bao gồm nội dung nào sau đây?", options: ["Đánh giá năng lực, nguồn lực và kinh nghiệm của chủ đầu tư", "Phân tích thị trường và xác định rủi ro trong đấu thầu", "Bối cảnh thực hiện dự án đối với công tác đấu thầu", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Khi có bằng chứng tổ chức, cá nhân tham gia hoạt động đấu thầu có hành vi vi phạm... người có thẩm quyền thực hiện biện pháp nào sau đây?", options: ["Đình chỉ cuộc thầu", "Không công nhận kết quả lựa chọn nhà thầu", "Xử lý vi phạm trong đấu thầu", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Kế hoạch tổng thể lựa chọn nhà thầu cho dự án phải bao gồm nội dung nào sau đây? (Câu hỏi thêm 1)", options: ["Đánh giá năng lực, nguồn lực và kinh nghiệm của chủ đầu tư", "Phân tích thị trường và xác định rủi ro trong đấu thầu", "Bối cảnh thực hiện dự án đối với công tác đấu thầu", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Khi có bằng chứng tổ chức, cá nhân tham gia hoạt động đấu thầu có hành vi vi phạm... người có thẩm quyền thực hiện biện pháp nào sau đây? (Câu hỏi thêm 2)", options: ["Đình chỉ cuộc thầu", "Không công nhận kết quả lựa chọn nhà thầu", "Xử lý vi phạm trong đấu thầu", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" }
-                ]
-            },
-            exam2: {
-                title: "Bài Thi Trắc Nghiệm số 2",
-                questions: [
-                    { question: "Nhà thầu tham dự thầu gói thầu mua sắm hàng hóa phải độc lập về pháp lý và tài chính với bên nào sau đây?", options: ["Nhà thầu phụ cùng tham dự thầu gói thầu đó", "Chủ đầu tư", "Nhà cung cấp vật tư", "Nhà thầu khác cùng tham dự thầu"], answer: "Chủ đầu tư" },
-                    { question: "Trường hợp Chủ đầu tư giao cho Tổ thẩm định thực hiện việc thẩm định kết quả lựa chọn nhà thầu, chi phí thẩm định kết quả lựa chọn nhà thầu bằng bao nhiêu phần trăm giá gói thầu?", options: ["0,1%", "0,05%", "0,2%", "0,15%"], answer: "0,1%" },
-                    { question: "Trường hợp Chủ đầu tư giao cho Tổ chuyên gia thực hiện việc đánh giá hồ sơ dự thầu, chi phí đánh giá hồ sơ dự thầu bằng bao nhiêu phần trăm giá gói thầu?", options: ["0,2%", "0,3%", "0,1%", "0,5%"], answer: "0,2%" },
-                    { question: "Trường hợp Chủ đầu tư giao cho Tổ thẩm định thực hiện việc thẩm định hồ sơ mời thầu, chi phí thẩm định Hồ sơ mời thầu bằng bao nhiêu phần trăm giá gói thầu?", options: ["0,3%", "0,5%", "0,2%", "0,1%"], answer: "0,1%" },
-                    { question: "Thời hạn xử lý hồ sơ đăng ký tài khoản trên Hệ thống mạng đấu thầu quốc gia là bao lâu?", options: ["02 ngày làm việc", "03 ngày làm việc", "05 ngày làm việc", "01 ngày làm việc"], answer: "02 ngày làm việc" },
-                    { question: "Chủ đầu tư chịu trách nhiệm đăng tải kế hoạch tổng thể lựa chọn nhà thầu trên Hệ thống mạng đấu thầu quốc gia trong thời hạn bao lâu kể từ ngày văn bản được ban hành?", options: ["03 ngày làm việc", "10 ngày", "05 ngày làm việc", "01 ngày làm việc"], answer: "05 ngày làm việc" },
-                    { question: "Nhà thầu trong nước được chuyển giao công nghệ để sản xuất hàng hóa có xuất xứ Việt Nam được hưởng ưu đãi trong thời hạn bao nhiêu năm kể từ khi sản phẩm lần đầu được sản xuất?", options: ["05 năm", "03 năm", "07 năm", "10 năm"], answer: "05 năm" },
-                    { question: "Thời hạn áp dụng thỏa thuận khung trong mua sắm tập trung tối đa là bao nhiêu tháng?", options: ["60 tháng", "24 tháng", "36 tháng", "12 tháng"], answer: "36 tháng" },
-                    { question: "Tổng mức chi cho Hội đồng tư vấn giải quyết kiến nghị của nhà thầu không được vượt quá:", options: ["Số tiền nhà thầu có kiến nghị đã nộp", "150% số tiền nhà thầu nộp", "50% số tiền nhà thầu nộp", "70% số tiền nhà thầu nộp"], answer: "Số tiền nhà thầu có kiến nghị đã nộp" },
-                    { question: "Hồ sơ dự thầu gói thầu tư vấn bắt buộc phải có tài liệu, văn bản nào sau đây, trừ trường hợp có quy định cụ thể tại hồ sơ mời thầu?", options: ["Giấy phép bán hàng", "Thỏa thuận liên danh", "Đơn dự thầu", "Bảo đảm dự thầu"], answer: "Đơn dự thầu" },
-                    { question: "Đặc điểm của phương thức hai giai đoạn hai túi hồ sơ là gì?", options: ["Chỉ mở một lần đối với toàn bộ hồ sơ dự thầu", "Chỉ áp dụng cho gói thầu tư vấn đơn giản", "Áp dụng cho gói thầu mua sắm hàng hóa, xây lắp, hỗn hợp có kỹ thuật, công nghệ mới, phức tạp, có tính đặc thù", "Chỉ áp dụng cho đấu thầu hạn chế trong nước"], answer: "Áp dụng cho gói thầu mua sắm hàng hóa, xây lắp, hỗn hợp có kỹ thuật, công nghệ mới, phức tạp, có tính đặc thù" },
-                    { question: "Giá gói thầu được tính đúng, đủ toàn bộ chi phí để thực hiện gói thầu, kể cả:", options: ["Chi phí dự phòng", "Phí, lệ phí và thuế", "Tùy chọn mua thêm", "Đáp án A và B"], answer: "Đáp án A và B" },
-                    { question: "Đối với gói thầu cung cấp dịch vụ phi tư vấn, mua sắm hàng hóa, xây lắp, hỗn hợp, nhà thầu được xem xét, đề nghị trúng thầu khi đáp ứng điều kiện nào sau đây?", options: ["Có hồ sơ dự thầu, hồ sơ đề xuất hợp lệ", "Có năng lực, kinh nghiệm đáp ứng yêu cầu của hồ sơ mời thầu, hồ sơ yêu cầu", "Có giá đề nghị trúng thầu không vượt giá gói thầu được phê duyệt", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Phương thức một giai đoạn một túi hồ sơ KHÔNG áp dụng cho trường hợp nào?", options: ["Chỉ định thầu xây lắp công trình", "Đấu thầu rộng rãi mua sắm hàng hóa", "Chào hàng cạnh tranh dịch vụ phi tư vấn", "Đấu thầu rộng rãi gói thầu tư vấn"], answer: "Đấu thầu rộng rãi gói thầu tư vấn" },
-                    { question: "Phương thức một giai đoạn hai túi hồ sơ được áp dụng trong trường hợp nào sau đây?", options: ["Chỉ định thầu đối với gói thầu xây lắp", "Mua sắm trực tiếp đối với mua sắm hàng hóa", "Chào hàng cạnh tranh đối với gói thầu xây lắp", "Đấu thầu rộng rãi, đấu thầu hạn chế đối với gói thầu mua sắm hàng hóa có công nghệ cao, công nghệ chiến lược"], answer: "Đấu thầu rộng rãi, đấu thầu hạn chế đối với gói thầu mua sắm hàng hóa có công nghệ cao, công nghệ chiến lược" },
-                    { question: "Từ ngày 01/01/2025, đấu thầu qua mạng được áp dụng bắt buộc đối với hình thức nào?", options: ["Đàm phán giá", "Đấu thầu rộng rãi, đấu thầu hạn chế, chào hàng cạnh tranh trong nước", "Chỉ định thầu quốc tế", "Mua sắm trực tiếp"], answer: "Đấu thầu rộng rãi, đấu thầu hạn chế, chào hàng cạnh tranh trong nước" },
-                    { question: "Khi phát hiện hành vi vi phạm dẫn đến sai lệch kết quả lựa chọn nhà thầu, Chủ đầu tư có thể thực hiện biện pháp nào?", options: ["Đình chỉ cuộc thầu", "Không công nhận kết quả lựa chọn nhà thầu", "Xử lý vi phạm trong đấu thầu", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Hội đồng tư vấn khoản chi cho các thành viên Hội đồng tư vấn... Trường hợp nhà thầu rút đơn kiến nghị sau khi Hội đồng tư vấn đã tổ chức họp thì:", options: ["Không được hoàn trả chi phí giải quyết kiến nghị", "Được hoàn trả 100% chi phí đã nộp", "Được hoàn trả 50% chi phí đã nộp", "Không bị xử lý gì"], answer: "Không được hoàn trả chi phí giải quyết kiến nghị" },
-                    { question: "Giá trị bảo đảm thực hiện hợp đồng?", options: ["Do Chủ đầu tư quyết định", "2-10% giá gói thầu", "2-10% giá hợp đồng", "2-3% giá gói thầu"], answer: "2-10% giá hợp đồng" },
-                    { question: "Hợp đồng theo đơn giá điều chỉnh được áp dụng trong trường hợp nào?", options: ["Gói thầu có thể xác định rõ giá trị hợp đồng ngay từ đầu", "Gói thầu có thời gian thực hiện dài và có rủi ro biến động giá đối với các chi phí đầu vào", "Gói thầu có thời gian thực hiện ngắn, giá cả ổn định", "Gói thầu bảo hiểm công trình"], answer: "Gói thầu có thời gian thực hiện dài và có rủi ro biến động giá đối với các chi phí đầu vào" },
-                    { question: "Phương pháp giá thấp nhất thường được áp dụng trong trường hợp nào sau đây?", options: ["Gói thầu hỗn hợp có nhiều phương án kỹ thuật", "Gói thầu có nhiều yếu tố kỹ thuật khác biệt", "Gói thầu mà các đề xuất về kỹ thuật, tài chính, thương mại được coi là cùng một mặt bằng khi đáp ứng các yêu cầu của hồ sơ mời thầu", "Gói thầu chỉ có một nhà thầu tham dự"], answer: "Gói thầu mà các đề xuất về kỹ thuật, tài chính, thương mại được coi là cùng một mặt bằng khi đáp ứng các yêu cầu của hồ sơ mời thầu" },
-                    { question: "Phương pháp giá cố định trong đánh giá hồ sơ dự thầu gói thầu tư vấn được áp dụng khi nào?", options: ["Gói thầu tư vấn đơn giản, phạm vi công việc xác định chính xác, chi phí hợp lý, cụ thể và cố định", "Gói thầu tư vấn có quy trình thực hiện phức tạp", "Gói thầu tư vấn áp dụng đấu thầu quốc tế", "Gói thầu tư vấn có nhiều phương án kỹ thuật"], answer: "Gói thầu tư vấn đơn giản, phạm vi công việc xác định chính xác, chi phí hợp lý, cụ thể và cố định" },
-                    { question: "Điều kiện nào sau đây KHÔNG phải là điều kiện áp dụng mua sắm tập trung?", options: ["Chỉ áp dụng cho hàng hóa nhập khẩu", "Có thể áp dụng cho thuốc hiếm, thuốc cần mua với số lượng ít", "Thuộc danh mục hàng hóa, dịch vụ áp dụng mua sắm tập trung do cơ quan có thẩm quyền ban hành", "Hàng hóa, dịch vụ cần mua sắm với số lượng lớn, chủng loại tương tự ở một hoặc nhiều cơ quan, tổ chức, đơn vị"], answer: "Chỉ áp dụng cho hàng hóa nhập khẩu" },
-                    { question: "Loại hợp đồng nào phù hợp nhất khi phạm vi công việc, yêu cầu kỹ thuật, thời gian thực hiện gói thầu đã xác định rõ.", options: ["Hợp đồng theo chi phí cộng phí", "Hợp đồng theo thời gian", "Hợp đồng theo đơn giá cố định", "Hợp đồng trọn gói"], answer: "Hợp đồng trọn gói" },
-                    { question: "Khi nào áp dụng hợp đồng theo đơn giá cố định?", options: ["Khi chưa xác định được rõ ràng bản chất công việc", "Khi phạm vi công việc có thể thay đổi lớn", "Khi bản chất công việc đã xác định rõ nhưng chưa xác định được chính xác số lượng, khối lượng công việc thực tế", "Khi cần thanh toán theo kết quả đầu ra"], answer: "Khi bản chất công việc đã xác định rõ nhưng chưa xác định được chính xác số lượng, khối lượng công việc thực tế" },
-                    { question: "Khi nào được áp dụng hình thức đặt hàng, giao nhiệm vụ khi lựa chọn nhà thầu cung cấp sản phẩm, dịch vụ công?", options: ["Khi cung cấp sản phẩm, dịch vụ công ích", "Khi cung cấp dịch vụ sự nghiệp công", "Khi Pháp luật quản lý ngành có quy định", "Cả 3 phương án trên"], answer: "Cả 3 phương án trên" },
-                    { question: "Đấu thầu hạn chế được áp dụng khi nào?", options: ["Khi nhà tài trợ yêu cầu tổ chức đấu thầu quốc tế", "Khi chủ đầu tư muốn rút ngắn thời gian đấu thầu", "Khi gói thầu có yêu cầu kỹ thuật cao hoặc đặc thù mà chỉ một số nhà thầu đáp ứng", "Khi gói thầu có giá trị trên 100 tỷ đồng"], answer: "Khi gói thầu có yêu cầu kỹ thuật cao hoặc đặc thù mà chỉ một số nhà thầu đáp ứng" },
-                    { question: "Chủ đầu tư phải cập nhật tiến độ thực tế thực hiện hợp đồng khi nào?", options: ["Khi có yêu cầu của cơ quan quản lý", "Khi hợp đồng kết thúc", "Khi thực hiện xong các mốc hoàn thành quy định trong hợp đồng", "Khi có yêu cầu của nhà thầu"], answer: "Khi thực hiện xong các mốc hoàn thành quy định trong hợp đồng" },
-                    { question: "Khi nào nhà thầu nước ngoài không phải liên danh với nhà thầu trong nước hoặc không phải sử dụng nhà thầu phụ trong nước?", options: ["Khi nhà thầu trong nước không đủ năng lực tham gia vào bất kỳ phần công việc nào của gói thầu", "Khi nhà thầu nước ngoài có đủ năng lực thực hiện gói thầu", "Khi nhà thầu nước ngoài có vốn góp tại Việt Nam", "Khi dự án thuộc lĩnh vực công nghệ cao"], answer: "Khi nhà thầu trong nước không đủ năng lực tham gia vào bất kỳ phần công việc nào của gói thầu" },
-                    { question: "Đối với gói thầu xây lắp, mua sắm hàng hóa, dịch vụ phi tư vấn, khi nào nhà thầu không được phép thay thế nhân sự chủ chốt trong hồ sơ dự thầu?", options: ["Khi nhân sự chuyển công tác", "Trong mọi trường hợp nếu kê khai nhân sự không trung thực", "Khi nhân sự không đáp ứng yêu cầu", "Vì lý do bất khảng kháng"], answer: "Trong mọi trường hợp nếu kê khai nhân sự không trung thực" },
-                    { question: "Trường hợp cần điều chỉnh hình thức lựa chọn nhà thầu do thay đổi giá gói thầu, chủ đầu tư phải làm gì?", options: ["Thông báo cho nhà thầu", "Không cần điều chỉnh", "Điều chỉnh KHLCNT", "Hủy thầu"], answer: "Điều chỉnh KHLCNT" },
-                    { question: "Trường hợp tất cả các nhà thầu tham dự thầu đều được hưởng ưu đãi như nhau thì:", options: ["Vẫn phải cộng ưu đãi vào giá dự thầu", "Chỉ tính ưu đãi cho nhà thầu trong nước", "Chỉ tính ưu đãi cho nhà thầu có giá thấp nhất", "Không cần tính ưu đãi để so sánh, xếp hạng"], answer: "Không cần tính ưu đãi để so sánh, xếp hạng" },
-                    { question: "Trường hợp nhà thầu có kiến nghị được kết luận là đúng thì:", options: ["Được hoàn trả 50% chi phí", "Không bị ảnh hưởng gì", "Được hoàn trả toàn bộ chi phí giải quyết kiến nghị", "Không được hoàn trả chi phí"], answer: "Được hoàn trả toàn bộ chi phí giải quyết kiến nghị" },
-                    { question: "Chủ đầu tư có trách nhiệm gì khi thực hiện hợp đồng?", options: ["Không điều chỉnh hợp đồng", "Quản lý tiến độ, chất lượng, chi phí và các nội dung khác của hợp đồng", "Không thay đổi tiến độ", "Không thay đổi giá hợp đồng"], answer: "Quản lý tiến độ, chất lượng, chi phí và các nội dung khác của hợp đồng" },
-                    { question: "Đối với gói thầu xây lắp, mua sắm hàng hóa, dịch vụ phi tư vấn, trường hợp hợp đồng tương tự mà nhà thầu đề xuất không đáp ứng yêu cầu, tổ chuyên gia xử lý như thế nào?", options: ["Không cho phép bổ sung, thay thế hợp đồng tương tự khác", "Có văn bản gửi Chủ đầu tư để đề nghị nhà thầu làm rõ hồ sơ dự thầu, cho phép bổ sung, thay thế hợp đồng tương tự khác để đánh giá", "Xin ý kiến của Chủ đầu tư", "Loại bỏ hồ sơ dự thầu của nhà thầu"], answer: "Có văn bản gửi Chủ đầu tư để đề nghị nhà thầu làm rõ hồ sơ dự thầu, cho phép bổ sung, thay thế hợp đồng tương tự khác để đánh giá" },
-                    { question: "Cơ sở khám bệnh, chữa bệnh có thể lựa chọn nhà thầu cung cấp hóa chất, vật tư xét nghiệm, thiết bị y tế theo cách thức nào sau đây?", options: ["Lựa chọn nhà thầu cung cấp hóa chất, vật tư xét nghiệm và nhà thầu trúng thầu chịu trách nhiệm cung cấp thiết bị y tế", "Lựa chọn nhà thầu theo số lượng dịch vụ kỹ thuật", "Lựa chọn nhà thầu thực hiện gói thầu cung cấp thiết bị y tế, hóa chất, vật tư xét nghiệm", "Tất cả các đáp án trên"], answer: "Tất cả các đáp án trên" },
-                    { question: "Nhà thầu tham dự gói thầu chìa khóa trao tay phải độc lập về pháp lý và tài chính với bên nào?", options: ["Nhà thầu cung cấp hàng hóa khác cho chủ đầu tư", "Nhà thầu phụ", "Nhà thầu cung cấp vật tư", "Nhà thầu lập, thẩm tra báo cáo nghiên cứu tiền khả thi"], answer: "Nhà thầu lập, thẩm tra báo cáo nghiên cứu tiền khả thi" },
-                    { question: "Sản phẩm, dịch vụ công là gì?", options: ["Sản phẩm, dịch vụ thiết yếu đối với đời sống kinh tế - xã hội hoặc bảo đảm quốc phòng, an ninh", "Bao gồm sản phẩm, dịch vụ công ích và dịch vụ sự nghiệp công", "Đáp án A và B đều đúng", "Gồm sản phẩm, dịch vụ công ích và sản phẩm công"], answer: "Đáp án A và B đều đúng" },
-                    { question: "Hợp đồng theo thời gian thường áp dụng cho loại công việc nào?", options: ["Xây lắp công trình lớn", "Đầu tư phát triển công nghệ cao", "Sửa chữa, bảo trì công trình, máy móc, thiết bị hoặc dịch vụ tư vấn khó xác định phạm vi và thời gian", "Mua sắm hàng hóa thông dụng"], answer: "Sửa chữa, bảo trì công trình, máy móc, thiết bị hoặc dịch vụ tư vấn khó xác định phạm vi và thời gian" },
-                    { question: "Trường hợp đấu thầu quốc tế, chi phí dịch tài liệu được tính như thế nào?", options: ["Theo quy định của Bộ Tài chính", "Theo quy định của chủ đầu tư", "Theo giá cố định", "Phù hợp với giá thị trường, bảo đảm hiệu quả của gói thầu"], answer: "Phù hợp với giá thị trường, bảo đảm hiệu quả của gói thầu" },
-                    { question: "Cơ sở dữ liệu quốc gia về nhà thầu bao gồm thông tin nào sau đây?", options: ["Thông tin về địa chỉ nhà thầu", "Thông tin về năng lực, kinh nghiệm của nhà thầu", "Thông tin về hợp đồng lao động cá nhân", "Thông tin về số lượng lao động"], answer: "Thông tin về năng lực, kinh nghiệm của nhà thầu" },
-                    { question: "Đấu thầu trước được áp dụng trong trường hợp nào?", options: ["Khi đã có quyết định phê duyệt dự án đầu tư", "Thực hiện trước một số thủ tục trước khi điều ước quốc tế, thỏa thuận vay nước ngoài được ký kết hoặc trước khi dự án được phê duyệt đầu tư", "Khi đã có hợp đồng ký kết với nhà thầu", "Khi dự án đã hoàn thành"], answer: "Thực hiện trước một số thủ tục trước khi điều ước quốc tế, thỏa thuận vay nước ngoài được ký kết hoặc trước khi dự án được phê duyệt đầu tư" },
-                    { question: "Ngôn ngữ sử dụng trong đấu thầu quốc tế là gì?", options: ["Tiếng Anh hoặc song ngữ tiếng Việt và tiếng Anh", "Tiếng Việt", "Tiếng Nga", "Tiếng Anh"], answer: "Tiếng Anh hoặc song ngữ tiếng Việt và tiếng Anh" },
-                    { question: "Nếu phát sinh tình huống chưa được quy định cụ thể trong Luật, chủ đầu tư xử lý thế nào?", options: ["Hủy thầu", "Xin ý kiến Sở Tài chính", "Quyết định và chịu trách nhiệm, bảo đảm cạnh tranh, minh bạch, hiệu quả, kinh tế và trách nhiệm giải trình", "Xin ý kiến cơ quan chủ quản"], answer: "Quyết định và chịu trách nhiệm, bảo đảm cạnh tranh, minh bạch, hiệu quả, kinh tế và trách nhiệm giải trình" },
-                    { question: "Khi E-HSMT có yêu cầu cung cấp hàng mẫu, nhà thầu được nộp bổ sung hàng mẫu trong thời hạn bao lâu sau thời điểm đóng thầu?", options: ["3 ngày làm việc", "2 ngày làm việc", "5 ngày làm việc", "7 ngày làm việc"], answer: "5 ngày làm việc" },
-                    { question: "Chủ đầu tư phát hành bản giấy hồ sơ mời quan tâm cho nhà thầu có giá trị pháp lý không?", options: ["Tùy từng trường hợp", "Chỉ có giá trị nếu có chữ ký số", "Không có giá trị pháp lý", "Có giá trị pháp lý"], answer: "Không có giá trị pháp lý" },
-                    { question: "Đối với gói thầu mua sắm hàng hóa, phải công khai chi tiết thông tin về các hạng mục hàng hóa trúng thầu, trừ nội dung nào?", options: ["Danh mục hàng hóa", "Mã số thuế nhà thầu", "Đơn giá trúng thầu", "Ký mã hiệu"], answer: "Mã số thuế nhà thầu" },
-                    { question: "Chứng thư số sử dụng trên Hệ thống phải đáp ứng điều kiện nào?", options: ["Do tổ chức cung cấp dịch vụ chứng thực chữ ký số công cộng cấp", "Do tổ chức cung cấp dịch vụ chứng thực chữ ký số chuyên dùng Chính phủ cấp", "Một trong hai đáp án A hoặc B", "Do bất kỳ tổ chức nào cấp"], answer: "Một trong hai đáp án A hoặc B" },
-                    { question: "File đăng tải trên Hệ thống phải đáp ứng yêu cầu nào sau đây?", options: ["Chỉ duyệt file PDF", "Được mã hóa riêng", "Được nén bằng phần mềm bất kỳ", "Không bị nhiễm virus, không bị lỗi, hỏng và không thiết lập mật khẩu"], answer: "Không bị nhiễm virus, không bị lỗi, hỏng và không thiết lập mật khẩu" },
-                    { question: "Nếu file đính kèm trong hồ sơ mời thầu không mở được, Chủ đầu tư phải làm gì?", options: ["Chỉ sửa file đính kèm bị lỗi và đăng tải, phát hành lại file này", "Đăng tải và phát hành lại toàn bộ hồ sơ mời thầu", "Gửi email file đính kèm cho nhà thầu", "Huỷ thầu"], answer: "Đăng tải và phát hành lại toàn bộ hồ sơ mời thầu" },
-                    { question: "Nếu E-HSMT không đầy đủ thông tin hoặc không rõ ràng, chủ đầu tư thầu phải làm gì?", options: ["Không cần làm gì", "Sửa đổi, bổ sung và đăng tải lại E-HSMT", "Chỉ bổ sung bằng văn bản giấy", "Gửi thông báo cho nhà thầu"], answer: "Sửa đổi, bổ sung và đăng tải lại E-HSMT" },
-                    { question: "Văn bản điện tử trên Hệ thống KHÔNG bao gồm nội dung nào?", options: ["Biên bản mở thầu", "Văn bản hợp đồng giấy", "Quyết định phê duyệt E-HSMT", "Thông tin về dự án"], answer: "Văn bản hợp đồng giấy" },
-                    { question: "Nhà thầu có trách nhiệm gì khi phát hiện E-HSMT không rõ ràng, gây khó khăn cho việc chuẩn bị E-HSDT?", options: ["Yêu cầu Chủ đầu tư làm rõ để chủ đầu tư, sửa đổi, bổ sung tài liệu", "Tự tìm hiểu", "Từ chối tham dự thầu", "Không cần làm gì"], answer: "Yêu cầu Chủ đầu tư làm rõ để chủ đầu tư, sửa đổi, bổ sung tài liệu" },
-                    { question: "File đính kèm trong E-HSDT không đáp ứng định dạng quy định sẽ được xử lý như thế nào?", options: ["Vẫn được xem xét, đánh giá", "Được đánh giá lại sau", "Không được xem xét, đánh giá", "Chỉ xem xét một phần"], answer: "Không được xem xét, đánh giá" },
-                    { question: "Tiêu chuẩn đánh giá về kỹ thuật đối với gói thầu xây lắp có thể sử dụng phương pháp nào?", options: ["Đạt, không đạt", "Chấm điểm", "Đáp án A và B đều đúng", "Tất cả các đáp án trên đều sai"], answer: "Đáp án A và B đều đúng" },
-                    { question: "Trường hợp có nghi ngờ về tính xác thực của các tài liệu do nhà thầu cung cấp, Chủ đầu tư được làm gì?", options: ["Xác minh với các tổ chức, cá nhân có liên quan đến nội dung của tài liệu", "Chấp nhận và tiếp tục đánh giá theo HSDT đã nộp", "Loại bỏ nhà thầu", "Yêu cầu nhà thầu là rõ tại bước hoàn thiện hợp đồng"], answer: "Xác minh với các tổ chức, cá nhân có liên quan đến nội dung của tài liệu" },
-                    { question: "Hồ sơ dự thầu không bắt buộc phải có tài liệu, văn bản nào sau đây, trừ trường hợp có quy định cụ thể tại hồ sơ mời thầu?", options: ["Giấy phép bán hàng", "Bản gốc hồ sơ dự thầu", "Đơn dự thầu", "Giá dự thầu"], answer: "Giấy phép bán hàng" },
-                    { question: "Phương pháp giá thấp nhất thường được áp dụng trong trường hợp nào sau đây?", options: ["Gói thầu hỗn hợp có nhiều phương án kỹ thuật", "Gói thầu mà các đề xuất về kỹ thuật, tài chính, thương mại được coi là cùng một mặt bằng khi đáp ứng các yêu cầu của hồ sơ mời thầu", "Gói thầu chỉ có một nhà thầu tham dự", "Gói thầu có nhiều yếu tố kỹ thuật khác biệt, đặc thù"], answer: "Gói thầu mà các đề xuất về kỹ thuật, tài chính, thương mại được coi là cùng một mặt bằng khi đáp ứng các yêu cầu của hồ sơ mời thầu" },
-                    { question: "Trong đấu thầu quốc tế, đồng tiền dự thầu tối đa được phép quy định trong hồ sơ mời thầu là bao nhiêu loại?", options: ["2 loại đồng tiền", "4 loại đồng tiền", "1 loại đồng tiền", "3 loại đồng tiền"], answer: "3 loại đồng tiền" }
-                ]
-            }
-        };
-
-        // --- DOM ELEMENT SELECTION ---
-        const doc = document;
-        const examSelectionScreen = doc.getElementById('exam-selection-screen');
-        const tabsBar = doc.getElementById('tabs-bar');
-        const startScreen = doc.getElementById('start-screen');
-        const quizScreen = doc.getElementById('quiz-screen');
-        const resultScreen = doc.getElementById('result-screen');
-
-        const startTitle = doc.getElementById('start-title');
-        const startBtn = doc.getElementById('start-btn');
-        const backToSelectionBtn = doc.getElementById('back-to-selection-btn');
-        const questionCountStart = doc.getElementById('question-count-start');
-        
-        const questionNumberEl = doc.getElementById('question-number');
-        const totalQuestionsEl = doc.getElementById('total-questions');
-        const questionTextEl = doc.getElementById('question-text');
-        const optionsContainer = doc.getElementById('options-container');
-        const prevBtn = doc.getElementById('prev-btn');
-        const nextBtn = doc.getElementById('next-btn');
-        const submitBtn = doc.getElementById('submit-btn');
-        const progressBar = doc.getElementById('progress-bar');
-        const timerEl = doc.getElementById('timer');
-
-        const scoreEl = doc.getElementById('score');
-        const totalScoreEl = doc.getElementById('total-score');
-        const resultDetailsContainer = doc.getElementById('result-details');
-        const restartBtn = doc.getElementById('restart-btn');
-        const goHomeBtn = doc.getElementById('go-home-btn');
-        
-        const confirmModal = doc.getElementById('confirm-modal');
-        const modalContent = doc.getElementById('modal-content');
-        const modalConfirmBtn = doc.getElementById('modal-confirm-btn');
-        const modalCancelBtn = doc.getElementById('modal-cancel-btn');
-
-
-        // --- STATE MANAGEMENT ---
-        let currentQuestionIndex = 0;
-        let userAnswers = [];
-        let timerInterval;
-        let quizData = [];
-        let currentExamId = null;
-
-        // --- UI HELPER FUNCTIONS ---
-
-        /**
-         * Hides all screens and shows the one with the specified ID.
-         * @param {string} screenId The ID of the screen to show.
-         */
-        function showScreen(screenId) {
-            [examSelectionScreen, startScreen, quizScreen, resultScreen].forEach(screen => {
-                screen.classList.add('hidden');
-            });
-            doc.getElementById(screenId).classList.remove('hidden');
-        }
-
-        /**
-         * Shows the confirmation modal.
-         */
-        function showConfirmModal() {
-            confirmModal.classList.remove('hidden');
-            // Add animation class
-            setTimeout(() => modalContent.classList.add('scale-100'), 10); 
-        }
-
-        /**
-         * Hides the confirmation modal.
-         */
-        function hideConfirmModal() {
-            modalContent.classList.remove('scale-100');
-            setTimeout(() => confirmModal.classList.add('hidden'), 300);
-        }
-
-        // --- QUIZ LOGIC FUNCTIONS ---
-
-        /**
-         * Initializes the application to the main exam selection screen.
-         */
-        function goHome() {
-            if (timerInterval) stopTimer();
-            timerEl.textContent = "00:00";
-            showScreen('exam-selection-screen');
-        }
-        
-        /**
-         * Sets up the start screen for the selected exam.
-         * @param {string} examId The ID of the selected exam (e.g., 'exam1').
-         */
-        function selectExam(examId) {
-            currentExamId = examId;
-            const originalQuestions = allExams[examId].questions;
-
-            // Adjust question counts
-            if (examId === 'exam1' && originalQuestions.length < 60) {
-                 const extras = [];
-                 for(let i=0; i < 60 - originalQuestions.length; i++){
-                    extras.push(originalQuestions[i % originalQuestions.length]); // loop over if not enough
-                 }
-                 quizData = [...originalQuestions, ...extras];
-            } else if (examId === 'exam2' && originalQuestions.length > 60) {
-                 quizData = originalQuestions.slice(0, 60);
-            } else {
-                 quizData = [...originalQuestions];
-            }
-            
-            // Ensure Exam 2 also has 60 if it's short
-            if (examId === 'exam2' && quizData.length < 60) {
-                const extras = [];
-                 for(let i=0; i < 60 - quizData.length; i++){
-                    extras.push(quizData[i % quizData.length]);
-                 }
-                 quizData = [...quizData, ...extras];
-            }
-
-
-            startTitle.textContent = allExams[examId].title;
-            questionCountStart.innerText = quizData.length;
-
-            showScreen('start-screen');
-        }
-
-        /**
-         * Starts the quiz: resets state, shows quiz screen, starts timer and displays first question.
-         */
-        function startQuiz() {
-            totalQuestionsEl.innerText = quizData.length;
-            userAnswers = new Array(quizData.length).fill(null);
-            currentQuestionIndex = 0;
-
-            showScreen('quiz-screen');
-            renderQuestionMap();
-            displayQuestion(currentQuestionIndex);
-            startTimer();
-        }
-
-        /**
-         * Displays a question and its options.
-         * @param {number} index The index of the question to display.
-         */
-        function displayQuestion(index) {
-            const question = quizData[index];
-            questionNumberEl.innerText = index + 1;
-            questionTextEl.innerText = question.question;
-            optionsContainer.innerHTML = '';
-
-            // Randomize options for variety
-            const shuffledOptions = [...question.options].sort(() => Math.random() - 0.5);
-
-            shuffledOptions.forEach(option => {
-                const button = doc.createElement('button');
-                button.innerHTML = option; // Use innerHTML to render potential HTML tags if any
-                button.classList.add('w-full', 'text-left', 'p-4', 'border-2', 'rounded-lg', 'transition-all', 'duration-200', 'hover:bg-blue-100', 'hover:border-blue-400', 'quiz-option', 'text-gray-700', 'bg-white');
-                if (userAnswers[index] === option) {
-                    button.classList.add('selected');
-                }
-                button.onclick = () => selectOption(index, option);
-                optionsContainer.appendChild(button);
-            });
-            
-            updateNavigation();
-            updateProgressBar();
-            updateQuestionMapStyles();
-        }
-
-        /**
-         * Handles the user's selection of an answer.
-         * @param {number} qIndex The index of the current question.
-         * @param {string} option The selected answer text.
-         */
-        function selectOption(qIndex, option) {
-            userAnswers[qIndex] = option;
-            updateQuestionMapStyles();
-            // Visually update which option is selected
-            const options = optionsContainer.querySelectorAll('.quiz-option');
-            options.forEach(opt => {
-                opt.classList.remove('selected');
-                if(opt.innerHTML === option) { // Compare with innerHTML
-                    opt.classList.add('selected');
-                }
-            });
-             // Automatically move to next question
-            setTimeout(() => {
-                if (currentQuestionIndex < quizData.length - 1) {
-                    showNextQuestion();
-                }
-            }, 200);
-        }
-        
-        /**
-         * Shows/hides navigation buttons based on the current question.
-         */
-        function updateNavigation() {
-            prevBtn.disabled = currentQuestionIndex === 0;
-            if (currentQuestionIndex === quizData.length - 1) {
-                nextBtn.classList.add('hidden');
-            } else {
-                nextBtn.classList.remove('hidden');
-            }
-        }
-
-        /**
-         * Updates the progress bar width.
-         */
-        function updateProgressBar() {
-            const progress = ((currentQuestionIndex + 1) / quizData.length) * 100;
-            progressBar.style.width = `${progress}%`;
-        }
-
-        /**
-         * Navigates to the next question.
-         */
-        function showNextQuestion() {
-            if (currentQuestionIndex < quizData.length - 1) {
-                currentQuestionIndex++;
-                displayQuestion(currentQuestionIndex);
-            }
-        }
-
-        /**
-         * Navigates to the previous question.
-         */
-        function showPrevQuestion() {
-            if (currentQuestionIndex > 0) {
-                currentQuestionIndex--;
-                displayQuestion(currentQuestionIndex);
-            }
-        }
-        
-        /**
-         * Calculates score, stops timer, and displays the result screen.
-         */
-        function submitQuiz() {
-            stopTimer();
-            let score = 0;
-            userAnswers.forEach((answer, index) => {
-                if (answer === quizData[index].answer) {
-                    score++;
-                }
-            });
-
-            scoreEl.innerText = score;
-            totalScoreEl.innerText = quizData.length;
-            displayResultDetails();
-
-            showScreen('result-screen');
-        }
-
-        /**
-         * Renders the detailed breakdown of answers on the result screen.
-         */
-        function displayResultDetails() {
-            resultDetailsContainer.innerHTML = '';
-            quizData.forEach((question, index) => {
-                const userAnswer = userAnswers[index];
-                const isCorrect = userAnswer === question.answer;
-
-                const questionResultDiv = doc.createElement('div');
-                questionResultDiv.classList.add('p-4', 'rounded-lg', 'border', isCorrect ? 'border-green-300' : 'border-red-300');
-
-                let resultHTML = `<p class="font-bold text-lg mb-4">Câu ${index + 1}: ${question.question}</p>
-                    <div class="space-y-2">`;
-                
-                question.options.forEach(option => {
-                    let optionClass = 'quiz-option border-gray-300';
-                    if (option === question.answer) {
-                        optionClass = 'quiz-option correct';
-                    }
-                    if (option === userAnswer && !isCorrect) {
-                        optionClass = 'quiz-option incorrect';
-                    }
-
-                    resultHTML += `<div class="${optionClass} p-3 rounded-md">${option}</div>`;
-                });
-
-                if (userAnswer === null) {
-                    resultHTML += `<p class="mt-3 text-sm text-yellow-600 font-medium">Bạn chưa trả lời câu này.</p>`;
-                }
-                
-                resultHTML += `</div>`;
-                questionResultDiv.innerHTML = resultHTML;
-                resultDetailsContainer.appendChild(questionResultDiv);
-            });
-        }
-        
-        // --- Question Map Functions ---
-        const questionMapContainer = doc.getElementById('question-map-container');
-        /**
-         * Renders the question navigation map.
-         */
-        function renderQuestionMap() {
-            questionMapContainer.innerHTML = '';
-            quizData.forEach((_, index) => {
-                const button = doc.createElement('button');
-                button.innerText = index + 1;
-                button.classList.add('question-map-btn');
-                button.dataset.questionIndex = index;
-                button.onclick = () => goToQuestion(index);
-                questionMapContainer.appendChild(button);
-            });
-            updateQuestionMapStyles();
-        }
-
-        /**
-         * Updates the styles of the question map buttons (current, answered).
-         */
-        function updateQuestionMapStyles() {
-            const buttons = questionMapContainer.querySelectorAll('.question-map-btn');
-            buttons.forEach((button) => {
-                const index = parseInt(button.dataset.questionIndex);
-                button.classList.remove('current', 'answered');
-                if (userAnswers[index] !== null) {
-                    button.classList.add('answered');
-                }
-                if (index === currentQuestionIndex) {
-                    button.classList.add('current');
-                }
-            });
-        }
-
-        /**
-         * Navigates directly to a specific question.
-         * @param {number} index The index of the question to go to.
-         */
-        function goToQuestion(index) {
-            currentQuestionIndex = index;
-            displayQuestion(currentQuestionIndex);
-        }
-
-
-        // --- TIMER FUNCTIONS ---
-        function startTimer() {
-            let seconds = 0;
-            timerEl.textContent = "00:00";
-            if (timerInterval) clearInterval(timerInterval);
-            timerInterval = setInterval(() => {
-                seconds++;
-                const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
-                const secs = (seconds % 60).toString().padStart(2, '0');
-                timerEl.textContent = `${minutes}:${secs}`;
-            }, 1000);
-        }
-
-        function stopTimer() {
-            clearInterval(timerInterval);
-        }
-
-        // --- EVENT LISTENERS ---
-        tabsBar.addEventListener('click', (e) => {
-            if (e.target.matches('.exam-tab-btn')) {
-                const examId = e.target.dataset.examId;
-                selectExam(examId);
-            }
-        });
-
-        startBtn.addEventListener('click', startQuiz);
-        backToSelectionBtn.addEventListener('click', goHome);
-        goHomeBtn.addEventListener('click', goHome);
-
-        nextBtn.addEventListener('click', showNextQuestion);
-        prevBtn.addEventListener('click', showPrevQuestion);
-        
-        submitBtn.addEventListener('click', showConfirmModal);
-        
-        modalConfirmBtn.addEventListener('click', () => {
-            hideConfirmModal();
-            submitQuiz();
-        });
-
-        modalCancelBtn.addEventListener('click', hideConfirmModal);
-
-        restartBtn.addEventListener('click', () => {
-            // Re-initializes the same exam
-            showScreen('quiz-screen');
-            totalQuestionsEl.innerText = quizData.length;
-            userAnswers = new Array(quizData.length).fill(null);
-            currentQuestionIndex = 0;
-            renderQuestionMap();
-            displayQuestion(currentQuestionIndex);
-            startTimer();
-        });
-        
-        // --- INITIALIZATION ---
-        goHome(); // Start the app at the selection screen.
-
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
-

@@ -1,0 +1,100 @@
+body {
+    font-family: 'Inter', sans-serif;
+    -webkit-tap-highlight-color: transparent;
+    transition: padding 0.3s ease-in-out;
+    /* --- NỀN CÔNG NGHỆ --- */
+    background-color: #0f172a; /* Màu nền dự phòng */
+    background-image:
+        radial-gradient(circle at 1px 1px, rgb(255, 255, 255) 1px, transparent 0), /* Hiệu ứng lưới chấm */
+        radial-gradient(at top left, #f3b0b0, #a6bef9, #cc99f4); /* Gradient chính */
+    background-size: 40px 40px, 100% 100%;
+}
+
+/* --- HIỆU ỨNG KÍNH MỜ --- */
+#quiz-container {
+    transition: all 0.3s ease-in-out;
+    background-color: rgb(255, 255, 255); /* Màu nền bán trong suốt */
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgb(255, 255, 255);
+}
+
+/* --- HIỆU ỨNG CHỮ PHÁT SÁNG --- */
+.text-glow {
+     text-shadow: 0 0 8px rgba(1, 14, 255, 0.5), 0 0 20px rgba(159, 67, 244, 0.4);
+}
+
+.quiz-option.selected {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+}
+.quiz-option.correct {
+    background-color: #22c55e !important;
+    color: white !important;
+    border-color: #16a34a !important;
+}
+.quiz-option.incorrect {
+    background-color: #ff0000 !important;
+    color: white !important;
+    border-color: #ff0040fd !important;
+}
+
+.question-map-btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    border: 2px solid #475569; /* slate-600 */
+    color: #cbd5e1; /* slate-300 */
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+    cursor: pointer;
+}
+.question-map-btn:hover {
+    background-color: #1e293b; /* slate-800 */
+    border-color: #64748b; /* slate-500 */
+}
+.question-map-btn.answered {
+    background-color: #1e40af; /* blue-800 */
+    border-color: #60a5fa; /* blue-400 */
+    color: #eff6ff; /* blue-50 */
+}
+.question-map-btn.current {
+    background-color: #3b82f6;
+    border-color: #93c5fd;
+    color: white;
+    transform: scale(1.1);
+    box-shadow: 0 0 15px rgba(59, 130, 246, 0.6);
+}
+
+/* Custom scrollbar for dark theme */
+#result-details::-webkit-scrollbar,
+#question-map-container::-webkit-scrollbar {
+    width: 8px;
+}
+#result-details::-webkit-scrollbar-track,
+#question-map-container::-webkit-scrollbar-track {
+    background: #1e293b; /* slate-800 */
+    border-radius: 10px;
+}
+#result-details::-webkit-scrollbar-thumb,
+#question-map-container::-webkit-scrollbar-thumb {
+    background: #475569; /* slate-600 */
+    border-radius: 10px;
+}
+#result-details::-webkit-scrollbar-thumb:hover,
+#question-map-container::-webkit-scrollbar-thumb:hover {
+    background: #64748b; /* slate-500 */
+}
+
+/* Quiz options on the result page need their text color updated */
+#result-details .quiz-option { 
+    color: #1f2937; /* text-gray-800 */
+} 
+#result-details .quiz-option.correct, 
+#result-details .quiz-option.incorrect { 
+    color: white !important; 
+}
