@@ -1291,7 +1291,6 @@ backToHomeBtn.addEventListener('click', async () => {
     if (auth.currentUser) await loadPastResults(auth.currentUser.uid);
     showScreen('main');
 });
-
 function renderQuiz() {
     const questionsContainer = document.getElementById('questions-container');
     const questionNav = document.getElementById('question-nav');
