@@ -1140,13 +1140,16 @@ function showScreen(screenName) {
 // --- AUTH LOGIC ---
 onAuthStateChanged(auth, async (user) => {
     screens.loading.classList.add('hidden');
+    const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
     if (user) {
         document.getElementById('user-email').textContent = user.email;
         renderQuizSelection();
         await loadPastResults(user.uid);
         showScreen('main');
+        chatbotToggleBtn.classList.remove('hidden');
     } else {
         showScreen('auth');
+        chatbotToggleBtn.classList.add('hidden');
     }
 });
 
@@ -1521,3 +1524,115 @@ loginForm.addEventListener('submit', async (e) => {
     catch (error) { authError.textContent = "Lỗi đăng nhập: " + error.code; }
 });
 logoutBtn.addEventListener('click', () => signOut(auth));
+
+// --- CHATBOT LOGIC ---
+const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
+const chatbotContainer = document.getElementById('chatbot-container');
+const chatbotCloseBtn = document.getElementById('chatbot-close-btn');
+const chatbotForm = document.getElementById('chatbot-form');
+const chatbotInput = document.getElementById('chatbot-input');
+const chatbotSendBtn = document.getElementById('chatbot-send-btn');
+const chatbotMessages = document.getElementById('chatbot-messages');
+
+let chatHistory = [{ role: "system", content: "You are a helpful assistant." }];
+
+const toggleChatbot = () => {
+    chatbotContainer.classList.toggle('hidden');
+    // A small trick to trigger transition
+    setTimeout(() => {
+        chatbotContainer.classList.toggle('open');
+    }, 10);
+};
+
+chatbotToggleBtn.addEventListener('click', toggleChatbot);
+chatbotCloseBtn.addEventListener('click', toggleChatbot);
+
+chatbotForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const message = chatbotInput.value.trim();
+    if (message) {
+        appendMessage(message, 'user');
+        getDeepSeekResponse(message);
+        chatbotInput.value = '';
+    }
+});
+
+function appendMessage(message, sender) {
+    const messageWrapper = document.createElement('div');
+    messageWrapper.classList.add('flex', 'mb-2', 'max-w-full');
+    
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('p-3', 'rounded-lg', 'break-words');
+
+    if (sender === 'user') {
+        messageWrapper.classList.add('justify-end');
+        messageElement.classList.add('user-message', 'ml-auto');
+        messageElement.textContent = message;
+    } else { // bot
+        messageWrapper.classList.add('justify-start');
+        messageElement.classList.add('bot-message', 'mr-auto');
+        if (message === 'typing...') {
+            messageElement.innerHTML = `<div class="flex items-center justify-center space-x-1"><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></div></div>`;
+            messageElement.id = 'typing-indicator';
+        } else {
+            messageElement.textContent = message;
+        }
+    }
+    
+    messageWrapper.appendChild(messageElement);
+    chatbotMessages.appendChild(messageWrapper);
+    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+}
+
+async function getDeepSeekResponse(userMessage) {
+    // --- CẤU HÌNH CHATBOT DEEPSEEK ---
+    // QUAN TRỌNG: Thay thế "YOUR_DEEPSEEK_API_KEY" bằng API Key của bạn
+    const DEEPSEEK_API_KEY = "sk-f6cc4087389745c39f1a3ffcd0ca6937";
+    const API_URL = "https://api.deepseek.com/chat/completions";
+    
+    if (DEEPSEEK_API_KEY === "sk-f6cc4087389745c39f1a3ffcd0ca6937") {
+        appendMessage("Lỗi: Vui lòng cấu hình API Key của DeepSeek trong mã nguồn.", 'bot');
+        return;
+    }
+
+    chatbotSendBtn.disabled = true;
+    appendMessage('typing...', 'bot');
+    
+    chatHistory.push({ role: "user", content: userMessage });
+
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
+            },
+            body: JSON.stringify({
+                model: "deepseek-chat",
+                messages: chatHistory
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        const botMessage = data.choices[0].message.content;
+
+        chatHistory.push({ role: "assistant", content: botMessage });
+        
+        // Remove typing indicator and add bot response
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) typingIndicator.parentElement.remove();
+        appendMessage(botMessage, 'bot');
+
+    } catch (error) {
+        console.error("Error calling DeepSeek API:", error);
+         const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) typingIndicator.parentElement.remove();
+        appendMessage("Rất tiếc, đã có lỗi xảy ra. Vui lòng thử lại.", 'bot');
+    } finally {
+        chatbotSendBtn.disabled = false;
+    }
+}

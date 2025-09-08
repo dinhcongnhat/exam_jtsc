@@ -6,7 +6,7 @@ body {
 }
 
 #main-screen, #review-screen, #result-screen, #auth-screen, #quiz-screen {
-     background-image: url('https://www.transparenttextures.com/patterns/subtle-prism.png'), linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
+    background-image: url('https://www.transparenttextures.com/patterns/subtle-prism.png'), linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
     background-attachment: fixed;
 }
 
@@ -40,4 +40,18 @@ body {
 @keyframes fadeInAnimation {
     from { opacity: 0; transform: translateY(-10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+/* Chatbot styles */
+#chatbot-container.open {
+    opacity: 1;
+    transform: translateY(0);
+}
+.user-message {
+    background-color: #dbeafe;
+    color: #1e3a8a;
+}
+.bot-message {
+    background-color: #f1f5f9;
+    color: #334155;
 }
