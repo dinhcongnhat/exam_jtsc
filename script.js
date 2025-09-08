@@ -1525,7 +1525,7 @@ loginForm.addEventListener('submit', async (e) => {
 });
 logoutBtn.addEventListener('click', () => signOut(auth));
 
-// --- CHATBOT LOGIC ---
+// --- CHATBOT LOGIC (MODIFIED FOR GOOGLE GEMINI) ---
 const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
 const chatbotContainer = document.getElementById('chatbot-container');
 const chatbotCloseBtn = document.getElementById('chatbot-close-btn');
@@ -1534,11 +1534,11 @@ const chatbotInput = document.getElementById('chatbot-input');
 const chatbotSendBtn = document.getElementById('chatbot-send-btn');
 const chatbotMessages = document.getElementById('chatbot-messages');
 
-let chatHistory = [{ role: "system", content: "You are a helpful assistant." }];
+// chatHistory format: [{ role: "user" | "model", parts: [{ text: "message content" }] }]
+let chatHistory = []; 
 
 const toggleChatbot = () => {
     chatbotContainer.classList.toggle('hidden');
-    // A small trick to trigger transition
     setTimeout(() => {
         chatbotContainer.classList.toggle('open');
     }, 10);
@@ -1552,7 +1552,7 @@ chatbotForm.addEventListener('submit', (e) => {
     const message = chatbotInput.value.trim();
     if (message) {
         appendMessage(message, 'user');
-        getDeepSeekResponse(message);
+        getGeminiResponse(message);
         chatbotInput.value = '';
     }
 });
@@ -1568,7 +1568,7 @@ function appendMessage(message, sender) {
         messageWrapper.classList.add('justify-end');
         messageElement.classList.add('user-message', 'ml-auto');
         messageElement.textContent = message;
-    } else { // bot
+    } else { // bot (model)
         messageWrapper.classList.add('justify-start');
         messageElement.classList.add('bot-message', 'mr-auto');
         if (message === 'typing...') {
@@ -1584,54 +1584,60 @@ function appendMessage(message, sender) {
     chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 }
 
-async function getDeepSeekResponse(userMessage) {
-    // --- CẤU HÌNH CHATBOT DEEPSEEK ---
-    // QUAN TRỌNG: Thay thế "YOUR_DEEPSEEK_API_KEY" bằng API Key của bạn
-    const DEEPSEEK_API_KEY = "sk-f6cc4087389745c39f1a3ffcd0ca6937";
-    const API_URL = "https://api.deepseek.com/chat/completions";
-    
-    if (DEEPSEEK_API_KEY === "sk-f6cc4087389745c39f1a3ffcd0ca6937") {
-        appendMessage("Lỗi: Vui lòng cấu hình API Key của DeepSeek trong mã nguồn.", 'bot');
+async function getGeminiResponse(userMessage) {
+    // --- CẤU HÌNH GOOGLE GEMINI API ---
+    const GEMINI_API_KEY = "AIzaSyAgmmVZ-IzSHeCwdG4BUQhmdnlaGm83dQA"; // Đảm bảo bạn đã thay key ở đây
+
+    // *** DÒNG ĐÃ SỬA LỖI ***
+    // Sử dụng 'gemini-1.5-flash' thay vì 'gemini-pro' đã lỗi thời
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+
+    if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
+        appendMessage("Lỗi: Vui lòng cấu hình API Key của Google Gemini trong mã nguồn.", 'bot');
         return;
     }
 
     chatbotSendBtn.disabled = true;
     appendMessage('typing...', 'bot');
     
-    chatHistory.push({ role: "user", content: userMessage });
+    chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
 
     try {
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
             },
             body: JSON.stringify({
-                model: "deepseek-chat",
-                messages: chatHistory
+                contents: chatHistory
             })
         });
 
         if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
+            const errorData = await response.json();
+            throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error.message}`);
         }
 
         const data = await response.json();
-        const botMessage = data.choices[0].message.content;
 
-        chatHistory.push({ role: "assistant", content: botMessage });
+        let botMessage = "Rất tiếc, tôi không thể xử lý yêu cầu này.";
+        if (data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0]) {
+            botMessage = data.candidates[0].content.parts[0].text;
+        } else if (data.candidates && data.candidates[0] && data.candidates[0].finishReason === "SAFETY") {
+            botMessage = "Nội dung này bị chặn vì lý do an toàn.";
+        }
         
-        // Remove typing indicator and add bot response
+        chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
+        
         const typingIndicator = document.getElementById('typing-indicator');
         if (typingIndicator) typingIndicator.parentElement.remove();
         appendMessage(botMessage, 'bot');
 
     } catch (error) {
-        console.error("Error calling DeepSeek API:", error);
-         const typingIndicator = document.getElementById('typing-indicator');
+        console.error("Error calling Google Gemini API:", error);
+        const typingIndicator = document.getElementById('typing-indicator');
         if (typingIndicator) typingIndicator.parentElement.remove();
-        appendMessage("Rất tiếc, đã có lỗi xảy ra. Vui lòng thử lại.", 'bot');
+        appendMessage(`Rất tiếc, đã có lỗi xảy ra. Vui lòng kiểm tra lại Console.`, 'bot');
     } finally {
         chatbotSendBtn.disabled = false;
     }
