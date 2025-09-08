@@ -14,10 +14,8 @@
 
 <body>
 
-    <!-- Container chính của ứng dụng -->
+    
     <div id="app-container" class="min-h-screen">
-
-        <!-- Màn hình tải -->
         <div id="loading-screen" class="fixed inset-0 bg-[#e0f7fa] z-50 flex items-center justify-center">
             <div class="flex flex-col items-center">
                  <svg class="h-16 w-16 text-[#2c5282] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -28,24 +26,18 @@
             </div>
         </div>
 
-        <!-- Màn hình Đăng nhập / Đăng ký -->
         <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-4 fade-in">
             <div class="w-full max-w-md">
                 <div class="card-tech rounded-2xl shadow-xl p-8 no-hover">
                     <div class="flex items-center justify-center mb-6">
-                        <!-- THAY ĐỔI LOGO: Thay đổi src="..." bằng đường dẫn đến logo của bạn -->
                         <img src="Logo.png" alt="Logo Công ty" class="h-20">
                     </div>
-
-                    <!-- Tabs -->
                     <div class="mb-6 border-b border-gray-200">
                         <nav class="flex -mb-px space-x-6">
                             <button id="login-tab-btn" class="py-4 px-1 border-b-2 font-medium text-lg border-[#2c5282] text-[#2c5282]">Đăng Nhập</button>
                             <button id="register-tab-btn" class="py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Đăng Ký</button>
                         </nav>
                     </div>
-
-                    <!-- Form -->
                     <form id="login-form" class="space-y-6">
                         <div>
                             <label for="login-email" class="text-sm font-medium text-gray-700">Email</label>
@@ -73,14 +65,11 @@
             </div>
         </div>
 
-        <!-- Màn hình chính (sau khi đăng nhập) -->
         <div id="main-screen" class="hidden fade-in">
-            <!-- Header -->
             <header class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-40 border-b border-gray-200">
                 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center justify-between h-20">
                         <div class="flex items-center">
-                           <!-- THAY ĐỔI LOGO: Thay đổi src="..." bằng đường dẫn đến logo của bạn -->
                            <img src="Logo.png" alt="Logo Công ty" class="h-20">
                         </div>
                         <div class="flex items-center space-x-4">
@@ -90,21 +79,13 @@
                     </div>
                 </div>
             </header>
-
-            <!-- Lựa chọn bài thi -->
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div class="text-center mb-12">
                     <h2 class="text-4xl md:text-5xl font-extrabold glow-text tracking-tight">CHỌN BÀI KIỂM TRA</h2>
                     <p class="mt-4 text-lg text-gray-600">Website kiểm tra nội bộ Công ty Cổ phần Dịch vụ Công nghệ Viễn thông JTSC.</p>
                 </div>
-
-                <div id="quiz-selection-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    <!-- Các thẻ bài thi sẽ được render vào đây bằng JS -->
-                </div>
+                <div id="quiz-selection-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
             </div>
-
-
-            <!-- Khu vực hiển thị kết quả cũ -->
              <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-3xl font-bold glow-text">Lịch sử làm bài</h3>
@@ -117,37 +98,53 @@
             </div>
         </div>
         
-        <!-- Màn hình làm bài trắc nghiệm -->
-        <div id="quiz-screen" class="hidden fade-in">
-             <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-                    <div id="questions-container" class="lg:col-span-8 card-tech p-6 rounded-2xl shadow-lg h-[85vh] overflow-y-auto custom-scrollbar no-hover"></div>
-                    <div class="lg:col-span-4">
-                        <div class="sticky top-8 space-y-6">
-                            <div class="card-tech p-6 rounded-2xl shadow-lg no-hover">
-                                <h3 class="text-xl font-bold mb-4 glow-text">Bảng điều khiển</h3>
-                                <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg border border-gray-200">
-                                    <span class="font-semibold text-gray-700">Thời gian:</span>
-                                    <span id="timer" class="text-2xl font-bold text-red-500 font-mono">100:00</span>
-                                </div>
-                                <button id="submit-quiz-btn" class="mt-6 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-transform transform hover:scale-105">Nộp Bài</button>
+        <div id="quiz-screen" class="hidden fade-in flex-col h-screen">
+            <header class="bg-white/80 backdrop-blur-md shadow-md z-10 border-b border-gray-200">
+                <div class="mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-20">
+                        <div class="flex items-center">
+                           <h2 id="quiz-header-title" class="text-2xl font-bold glow-text">Đang làm bài...</h2>
+                        </div>
+                        <div class="flex items-center space-x-4">
+                            <div class="flex items-center space-x-2 bg-gray-100 p-2 rounded-lg border border-gray-200">
+                                <span class="font-semibold text-gray-700">Thời gian còn lại:</span>
+                                <span id="timer" class="text-2xl font-bold text-red-500 font-mono">100:00</span>
                             </div>
-                            <div class="card-tech p-6 rounded-2xl shadow-lg no-hover">
-                                <h3 class="text-xl font-bold mb-4 glow-text">Điều hướng</h3>
-                                <div id="question-nav" class="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2"></div>
-                                <div class="mt-4 space-y-2 text-sm text-gray-500">
-                                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 mr-2"></span>Chưa trả lời</div>
-                                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-green-500 mr-2"></span>Đã trả lời</div>
-                                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-yellow-400 mr-2"></span>Đã đánh dấu</div>
-                                </div>
-                            </div>
+                            <button id="submit-quiz-btn" class="bg-green-600 text-white font-bold py-2 px-6 rounded-lg hover:bg-green-700 transition">Nộp Bài</button>
+                            <button id="exit-quiz-btn" class="bg-gray-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-gray-600 transition">Thoát</button>
                         </div>
                     </div>
                 </div>
-            </div>
+            </header>
+            
+            <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 custom-scrollbar">
+                <div id="questions-container" class="max-w-4xl mx-auto space-y-8"></div>
+            </main>
+
+            <footer class="bg-white/90 backdrop-blur-md shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-3 z-10">
+                <div class="max-w-6xl mx-auto">
+                    <div id="toggle-nav-btn" class="flex items-center justify-between mb-2 cursor-pointer">
+                         <h3 class="text-lg font-bold glow-text">Điều hướng câu hỏi</h3>
+                         <div class="flex items-center">
+                             <div class="flex space-x-4 text-sm text-gray-500 mr-4">
+                                <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 mr-2"></span>Chưa trả lời</div>
+                                <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-green-500 mr-2"></span>Đã trả lời</div>
+                                <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-yellow-400 mr-2"></span>Đã đánh dấu</div>
+                            </div>
+                            <button class="p-1">
+                                <svg id="nav-arrow-up" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" /></svg>
+                                <svg id="nav-arrow-down" xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 transition-transform hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" /></svg>
+                            </button>
+                         </div>
+                    </div>
+                    <div id="collapsible-nav">
+                        <div id="question-nav" class="flex flex-wrap gap-2 justify-center pt-2 border-t border-gray-200"></div>
+                    </div>
+                </div>
+            </footer>
         </div>
 
-        <!-- Màn hình kết quả -->
+
         <div id="result-screen" class="hidden min-h-screen flex items-center justify-center p-4 fade-in">
             <div class="card-tech rounded-2xl shadow-xl p-8 text-center max-w-4xl w-full no-hover">
                 <h2 class="text-4xl font-extrabold glow-text">HOÀN THÀNH</h2>
@@ -175,28 +172,21 @@
                         <p id="unanswered-questions" class="text-2xl font-bold text-gray-800">0</p>
                     </div>
                 </div>
-
-                <!-- Chi tiết bài làm -->
                 <div class="mt-8 w-full text-left">
                     <h3 class="text-2xl font-bold glow-text mb-4 text-center">Chi tiết bài làm</h3>
-                    <div id="result-details-container" class="max-h-[40vh] overflow-y-auto custom-scrollbar space-y-4 pr-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        <!-- Details will be rendered here -->
-                    </div>
+                    <div id="result-details-container" class="max-h-[40vh] overflow-y-auto custom-scrollbar space-y-4 pr-4 bg-gray-50 p-4 rounded-lg border border-gray-200"></div>
                 </div>
-                
                 <div class="mt-8">
                     <button id="back-to-home-btn" class="bg-blue-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-800 transition-transform transform hover:scale-105">Trở về Trang chủ</button>
                 </div>
             </div>
         </div>
         
-        <!-- Màn hình xem lại bài làm -->
         <div id="review-screen" class="hidden fade-in min-h-screen">
             <header class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-40 border-b border-gray-200">
                 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center justify-between h-20">
                         <div class="flex items-center">
-                           <!-- THAY ĐỔI LOGO: Thay đổi src="..." bằng đường dẫn đến logo của bạn -->
                            <img src="Logo.png" alt="Logo Công ty" class="h-20">
                             <h1 id="review-title" class="ml-3 text-2xl font-bold glow-text">Xem Lại Bài Làm</h1>
                         </div>
@@ -206,36 +196,28 @@
             </header>
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div id="review-content-container" class="card-tech p-6 rounded-2xl shadow-lg no-hover">
-                    <div id="review-content" class="space-y-8">
-                        <!-- Nội dung xem lại sẽ được render vào đây -->
-                    </div>
+                    <div id="review-content" class="space-y-8"></div>
                 </div>
             </div>
         </div>
-
     </div>
 
-     <!-- Chatbot Floating Button -->
+    <!-- Giao diện Chatbot -->
     <button id="chatbot-toggle-btn" class="hidden fixed bottom-6 right-6 bg-blue-700 text-white rounded-full p-4 shadow-lg hover:bg-blue-800 transition-transform transform hover:scale-110 z-50">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8" viewBox="0 0 24 24" fill="currentColor">
             <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM9.43 13.57c-.23-.23-.3-.59-.16-.88.22-.45.5-.85.82-1.22.2-.23.55-.26.8-.06.25.2.28.55.06.8-.29.33-.54.7-.72 1.12-.13.31-.47.45-.7.24zm5.14 0c-.23-.23-.3-.59-.16-.88.22-.45.5-.85.82-1.22.2-.23.55-.26.8-.06.25.2.28.55.06.8-.29.33-.54.7-.72 1.12-.13.31-.47.45-.7.24z"/>
         </svg>
     </button>
-
-    <!-- Chatbot Window -->
-   <div id="chatbot-container" class="hidden fixed bottom-24 right-6 w-full max-w-sm h-[70vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50 transition-all duration-300 transform translate-y-4 opacity-0">
-        <!-- Header -->
+    <div id="chatbot-container" class="hidden fixed bottom-24 right-6 w-full max-w-sm h-[70vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50">
         <div class="flex justify-between items-center p-4 bg-blue-700 text-white rounded-t-2xl">
-            <h3 class="font-bold text-lg">JTSC ASSISTANT</h3>
+            <h3 class="font-bold text-lg">JTSC Assistant</h3>
             <button id="chatbot-close-btn" class="text-white text-2xl font-bold hover:text-gray-200">&times;</button>
         </div>
-        <!-- Messages -->
         <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto custom-scrollbar">
             <div class="bot-message p-3 rounded-lg mb-2 max-w-xs break-words">
-                JTSC Xin chào! Có khó khăn gì trong quá trình làm bài hãy hỏi tôi nhé!
+                Xin chào! Tôi có thể giúp gì cho bạn?
             </div>
         </div>
-        <!-- Input -->
         <form id="chatbot-form" class="p-4 border-t border-gray-200">
             <div class="flex">
                 <input type="text" id="chatbot-input" placeholder="Hỏi điều gì đó..." class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-blue-600" autocomplete="off">
