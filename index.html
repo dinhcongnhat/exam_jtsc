@@ -1,137 +1,203 @@
 <!DOCTYPE html>
 <html lang="vi">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JTSC EXAMINATION</title>
+    <title>QuizMatrix - Thách Thức Trí Tuệ Số</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
-<body id="main-body" class="flex items-center justify-center min-h-screen p-4">
 
-    <div id="quiz-container" class="w-full max-w-4xl p-6 sm:p-8 rounded-2xl shadow-2xl">
-        
-        <div id="landing-screen" class="text-center">
-            <img src="./image/JTSC-Logo.png" alt="Company Logo" class="mx-auto h-20 mb-6">
-            <h1 class="text-4xl sm:text-5xl font-extrabold text-gray-50 mb-4 text-glow">WELCOME TO JTSC EXAMINATION</h1>
-            <p class="text-black-300 max-w-2xl mx-auto mb-8">Nền tảng thi thử chứng chỉ đấu thầu nội bộ của Công ty Cổ phần Dịch vụ Công nghệ Viễn thông JTSC.</p>
-            <img src="./image/Cty.png" alt="Banner Image" class="w-full h-auto rounded-lg shadow-xl mb-8 border-2 border-slate-700">
-            <button id="enter-quiz-btn" class="w-full sm:w-auto bg-blue-600 text-white font-bold py-3 px-10 rounded-lg hover:bg-blue-700 transition-transform hover:scale-105 duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/50 shadow-lg text-lg">
-                Bắt đầu làm bài
-            </button>
-        </div>
+<body>
 
-        <div id="exam-selection-screen" class="hidden">
-            <h1 class="text-3xl font-bold text-center text-black-100 mb-8 text-glow">Chọn Bài Thi</h1>
-            <div id="tabs-bar" class="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <button data-exam-id="exam1" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
-                    Bài thi số 1
-                </button>
-                <button data-exam-id="exam2" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
-                    Bài thi số 2
-                </button>
-                <button data-exam-id="exam3" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
-                    Bài thi số 3
-                </button>
-                 <button data-exam-id="exam4" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
-                    Bài thi số 4
-                </button>
-                 <button data-exam-id="exam5" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
-                    Bài thi số 5
-                </button>
-                <button data-exam-id="random" class="exam-tab-btn w-full sm:w-auto text-lg font-semibold py-3 px-8 rounded-lg bg-slate-800/50 border-2 border-green-500 text-green-400 hover:bg-green-500 hover:text-white transition-all duration-300">
-                    Bài thi ngẫu nhiên
-                </button>
-            </div>
-            <div class="text-center mt-8">
-                <button id="back-to-landing-btn" class="text-gray-400 hover:text-black font-semibold transition-colors">
-                    &#8592; Quay lại trang chủ
-                </button>
+    <div id="app-container" class="min-h-screen">
+
+        <div id="loading-screen" class="fixed inset-0 bg-[#e0f7fa] z-50 flex items-center justify-center">
+            <div class="flex flex-col items-center">
+                 <svg class="h-16 w-16 text-[#2c5282] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="mt-4 text-lg font-semibold text-gray-600">Đang khởi tạo hệ thống...</p>
             </div>
         </div>
 
-        <div id="start-screen" class="hidden text-center">
-            <h1 id="start-title" class="text-3xl font-bold text-black-50 mb-4 text-glow"></h1>
-            <p class="text-center text-black-300 mb-8">Bài thi gồm <span id="question-count-start"></span> câu hỏi. Chúc bạn làm bài tốt!</p>
-            <div class="flex flex-col space-y-4">
-                <button id="start-btn" class="w-full bg-blue-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/50 shadow-md">
-                    Bắt Đầu Làm Bài
-                </button>
-                <button id="back-to-selection-btn" class="w-full bg-slate-700 text-gray-200 font-semibold py-3 px-6 rounded-lg hover:bg-slate-600 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-slate-500/50">
-                    Chọn bài thi khác
-                </button>
-            </div>
-        </div>
-
-        <div id="quiz-screen" class="hidden">
-             <div class="md:grid md:grid-cols-4 md:gap-8 h-full">
-                <div class="md:col-span-3 flex flex-col h-full">
-                    <div class="mb-6 flex-shrink-0">
-                        <div class="flex justify-between items-center mb-2">
-                            <h2 class="text-lg font-semibold text-blue-400">Câu hỏi <span id="question-number"></span>/<span id="total-questions"></span></h2>
-                            <div id="timer" class="text-lg font-bold text-gray-50">00:00</div>
-                        </div>
-                        <div class="w-full bg-slate-700 rounded-full h-2.5">
-                            <div id="progress-bar" class="bg-blue-500 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
-                        </div>
+        <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-4 fade-in">
+            <div class="w-full max-w-md">
+                <div class="card-tech rounded-2xl shadow-xl p-8 no-hover">
+                    <div class="flex items-center justify-center mb-6">
+                        <svg class="h-10 w-10 text-[#2c5282]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l-1.414-1.414M19.778 19.778l-1.414-1.414M19.778 5.636l-1.414 1.414M5.636 19.778l-1.414-1.414" /></svg>
+                        <h1 class="ml-3 text-3xl font-bold glow-text">QuizMatrix</h1>
                     </div>
 
-                    <p id="question-text" class="text-xl font-medium text-black-100 mb-6"></p>
-                    
-                    <div id="options-container" class="space-y-3 overflow-y-auto flex-grow pr-2">
-                        </div>
+                    <div class="mb-6 border-b border-gray-200">
+                        <nav class="flex -mb-px space-x-6">
+                            <button id="login-tab-btn" class="py-4 px-1 border-b-2 font-medium text-lg border-[#2c5282] text-[#2c5282]">Đăng Nhập</button>
+                            <button id="register-tab-btn" class="py-4 px-1 border-b-2 font-medium text-lg border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300">Đăng Ký</button>
+                        </nav>
+                    </div>
 
-                    <div class="mt-8 flex justify-between items-center flex-shrink-0">
-                        <button id="prev-btn" class="bg-slate-700 text-gray-200 font-semibold py-2 px-6 rounded-lg hover:bg-slate-600 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-slate-500/50 disabled:opacity-50 disabled:cursor-not-allowed">
-                            Câu Trước
-                        </button>
+                    <form id="login-form" class="space-y-6">
+                        <div>
+                            <label for="login-email" class="text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="login-email" required class="mt-1 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2c5282] focus:border-[#2c5282] transition">
+                        </div>
+                        <div>
+                            <label for="login-password" class="text-sm font-medium text-gray-700">Mật khẩu</label>
+                            <input type="password" id="login-password" required class="mt-1 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2c5282] focus:border-[#2c5282] transition">
+                        </div>
+                        <button type="submit" class="w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-green-600 transition-transform transform hover:scale-105">Đăng Nhập</button>
+                    </form>
+                    <form id="register-form" class="hidden space-y-6">
+                        <div>
+                            <label for="register-email" class="text-sm font-medium text-gray-700">Email</label>
+                            <input type="email" id="register-email" required class="mt-1 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2c5282] focus:border-[#2c5282] transition">
+                        </div>
+                        <div>
+                            <label for="register-password" class="text-sm font-medium text-gray-700">Mật khẩu</label>
+                            <input type="password" id="register-password" required class="mt-1 w-full px-4 py-3 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-[#2c5282] focus:border-[#2c5282] transition">
+                        </div>
+                        <button type="submit" class="w-full bg-blue-700 text-white font-bold py-3 px-4 rounded-lg hover:bg-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-white focus:ring-blue-700 transition-transform transform hover:scale-105">Đăng Ký</button>
+                    </form>
+                    <p id="auth-error" class="mt-4 text-center text-red-600 font-medium"></p>
+                </div>
+            </div>
+        </div>
+
+        <div id="main-screen" class="hidden fade-in">
+            <header class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-40 border-b border-gray-200">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-20">
+                        <div class="flex items-center">
+                           <svg class="h-8 w-8 text-[#2c5282]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l-1.414-1.414M19.778 19.778l-1.414-1.414M19.778 5.636l-1.414 1.414M5.636 19.778l-1.414-1.414" /></svg>
+                            <h1 class="ml-3 text-2xl font-bold glow-text">QuizMatrix</h1>
+                        </div>
                         <div class="flex items-center space-x-4">
-                            <button id="next-btn" class="bg-blue-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/50 shadow-md">
-                                Câu Tiếp
-                            </button>
-                            <button id="submit-btn" class="bg-green-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-green-400/50 shadow-md">
-                                Nộp Bài
-                            </button>
+                            <span id="user-email" class="text-md font-medium text-gray-700 hidden sm:block"></span>
+                            <button id="logout-btn" class="bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-700 transition-transform transform hover:scale-105">Đăng Xuất</button>
                         </div>
                     </div>
                 </div>
-                <div class="md:col-span-1 mt-8 md:mt-0 flex flex-col h-full">
-                    <h3 class="text-lg font-semibold mb-4 text-center text-black-200 flex-shrink-0">Bảng câu hỏi</h3>
-                    <div id="question-map-container" class="grid grid-cols-5 sm:grid-cols-8 md:grid-cols-6 gap-2 overflow-y-auto p-2 bg-slate-800/50 rounded-lg flex-grow">
-                        </div>
+            </header>
+
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl md:text-5xl font-extrabold glow-text tracking-tight">CHỌN BÀI KIỂM TRA</h2>
+                    <p class="mt-4 text-lg text-gray-600">Hãy chọn một thử thách để bắt đầu hành trình chinh phục kiến thức của bạn.</p>
+                </div>
+
+                <div id="quiz-selection-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    </div>
+            </div>
+
+
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-3xl font-bold glow-text">Lịch sử làm bài</h3>
+                    <button id="delete-history-btn" class="hidden bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">Xóa Tất Cả</button>
+                </div>
+                <div id="past-results-container" class="card-tech p-6 rounded-2xl shadow-lg no-hover">
+                    <p id="no-results-text" class="text-gray-500">Chưa có dữ liệu nào được ghi nhận.</p>
+                    <div id="results-list" class="space-y-4"></div>
                 </div>
             </div>
         </div>
         
-        <div id="result-screen" class="hidden text-center">
-            <h2 class="text-3xl font-bold text-black-50 mb-4 text-glow">Hoàn Thành Bài Thi!</h2>
-            <p class="text-xl text-black-50 mb-2">Điểm của bạn:</p>
-            <p class="text-5xl font-extrabold text-blue-400 mb-6"><span id="score"></span>/<span id="total-score"></span></p>
-            <div id="result-details" class="mt-8 text-left border-t border-slate-700 pt-6 space-y-6 max-h-[50vh] overflow-y-auto pr-4">
-                 </div>
-            <div class="mt-8 flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <button id="restart-btn" class="w-full sm:w-auto bg-blue-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-blue-400/50 shadow-md">
-                    Làm Lại
-                </button>
-                <button id="go-home-btn" class="w-full sm:w-auto bg-slate-600 text-white font-semibold py-3 px-8 rounded-lg hover:bg-slate-700 transition-colors duration-300 focus:outline-none focus:ring-4 focus:ring-slate-500/50 shadow-md">
-                    Chọn bài thi khác
-                </button>
+        <div id="quiz-screen" class="hidden fade-in">
+             <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <div id="questions-container" class="lg:col-span-8 card-tech p-6 rounded-2xl shadow-lg h-[85vh] overflow-y-auto custom-scrollbar no-hover"></div>
+                    <div class="lg:col-span-4">
+                        <div class="sticky top-8 space-y-6">
+                            <div class="card-tech p-6 rounded-2xl shadow-lg no-hover">
+                                <h3 class="text-xl font-bold mb-4 glow-text">Bảng điều khiển</h3>
+                                <div class="flex justify-between items-center bg-gray-100 p-4 rounded-lg border border-gray-200">
+                                    <span class="font-semibold text-gray-700">Thời gian:</span>
+                                    <span id="timer" class="text-2xl font-bold text-red-500 font-mono">10:00</span>
+                                </div>
+                                <button id="submit-quiz-btn" class="mt-6 w-full bg-green-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-green-700 transition-transform transform hover:scale-105">Nộp Bài</button>
+                            </div>
+                            <div class="card-tech p-6 rounded-2xl shadow-lg no-hover">
+                                <h3 class="text-xl font-bold mb-4 glow-text">Điều hướng</h3>
+                                <div id="question-nav" class="grid grid-cols-5 sm:grid-cols-8 lg:grid-cols-5 gap-2"></div>
+                                <div class="mt-4 space-y-2 text-sm text-gray-500">
+                                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-white border-2 border-gray-300 mr-2"></span>Chưa trả lời</div>
+                                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-green-500 mr-2"></span>Đã trả lời</div>
+                                    <div class="flex items-center"><span class="w-4 h-4 rounded-full bg-yellow-400 mr-2"></span>Đã đánh dấu</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </div>
 
-    <div id="confirm-modal" class="hidden fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center p-4 z-50">
-        <div class="bg-slate-800 border border-slate-700 p-8 rounded-lg shadow-xl w-full max-w-sm text-center transform transition-all" id="modal-content">
-            <h3 class="text-xl font-bold mb-4 text-gray-50">Xác nhận nộp bài</h3>
-            <p class="text-gray-300 mb-8">Bạn có chắc chắn muốn nộp bài không?</p>
-            <div class="flex justify-center space-x-4">
-                <button id="modal-cancel-btn" class="w-full bg-slate-600 text-gray-200 font-semibold py-2 px-6 rounded-lg hover:bg-slate-500 transition-colors duration-300">Hủy</button>
-                <button id="modal-confirm-btn" class="w-full bg-green-600 text-white font-semibold py-2 px-6 rounded-lg hover:bg-green-700 transition-colors duration-300">Xác nhận</button>
+        <div id="result-screen" class="hidden min-h-screen flex items-center justify-center p-4 fade-in">
+            <div class="card-tech rounded-2xl shadow-xl p-8 text-center max-w-4xl w-full no-hover">
+                <h2 class="text-4xl font-extrabold glow-text">HOÀN THÀNH</h2>
+                <p class="mt-2 text-lg text-gray-600">Kết quả của bạn đã được ghi nhận vào hệ thống.</p>
+                <div class="my-8">
+                    <div class="relative inline-flex items-center justify-center w-48 h-48">
+                        <svg class="w-full h-full" viewBox="0 0 100 100">
+                            <circle class="text-gray-200" stroke-width="10" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" />
+                            <circle id="progress-circle" class="text-[#2c5282]" stroke-width="10" stroke-linecap="round" stroke="currentColor" fill="transparent" r="45" cx="50" cy="50" style="transition: stroke-dashoffset 0.5s ease-in-out; transform: rotate(-90deg); transform-origin: 50% 50%;" />
+                        </svg>
+                        <span id="score-text" class="absolute text-4xl font-bold text-gray-800">0/0</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-lg">
+                     <div class="bg-green-100 p-4 rounded-lg border border-green-200">
+                        <p class="font-bold text-green-800">Đúng</p>
+                        <p id="correct-answers" class="text-2xl font-bold text-green-800">0</p>
+                    </div>
+                    <div class="bg-red-100 p-4 rounded-lg border border-red-200">
+                        <p class="font-bold text-red-800">Sai</p>
+                        <p id="incorrect-answers" class="text-2xl font-bold text-red-800">0</p>
+                    </div>
+                    <div class="bg-gray-100 p-4 rounded-lg border border-gray-200">
+                        <p class="font-bold text-gray-800">Bỏ qua</p>
+                        <p id="unanswered-questions" class="text-2xl font-bold text-gray-800">0</p>
+                    </div>
+                </div>
+
+                <div class="mt-8 w-full text-left">
+                    <h3 class="text-2xl font-bold glow-text mb-4 text-center">Chi tiết bài làm</h3>
+                    <div id="result-details-container" class="max-h-[40vh] overflow-y-auto custom-scrollbar space-y-4 pr-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        </div>
+                </div>
+                
+                <div class="mt-8">
+                    <button id="back-to-home-btn" class="bg-blue-700 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-800 transition-transform transform hover:scale-105">Trở về Trang chủ</button>
+                </div>
             </div>
         </div>
+        
+        <div id="review-screen" class="hidden fade-in min-h-screen">
+            <header class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-40 border-b border-gray-200">
+                <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex items-center justify-between h-20">
+                        <div class="flex items-center">
+                           <svg class="h-8 w-8 text-[#2c5282]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l-1.414-1.414M19.778 19.778l-1.414-1.414M19.778 5.636l-1.414 1.414M5.636 19.778l-1.414-1.414" /></svg>
+                            <h1 id="review-title" class="ml-3 text-2xl font-bold glow-text">Xem Lại Bài Làm</h1>
+                        </div>
+                        <button id="back-from-review-btn" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 transition-transform transform hover:scale-105">Quay Lại</button>
+                    </div>
+                </div>
+            </header>
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                <div id="review-content-container" class="card-tech p-6 rounded-2xl shadow-lg no-hover">
+                    <div id="review-content" class="space-y-8">
+                        </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 
-    <script src="script.js"></script>
+    <script type="module" src="script.js"></script>
 </body>
 </html>
