@@ -4,18 +4,64 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QuizMatrix - Thách Thức Trí Tuệ Số</title>
+    <title>JTSC-Examination</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;900&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-image: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%); /* New light gradient background */
+            color: #1a202c; /* Dark text */
+            scroll-behavior: smooth;
+        }
+        
+        #main-screen, #review-screen, #result-screen, #auth-screen, #quiz-screen {
+             background-image: url('https://www.transparenttextures.com/patterns/subtle-prism.png'), linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
+            background-attachment: fixed;
+        }
+
+        .glow-text {
+            font-family: 'Montserrat', sans-serif;
+            color: #2c5282; /* Dark blue */
+            text-shadow: 0 0 8px rgba(44, 82, 130, 0.3);
+        }
+
+        .card-tech {
+            background: rgba(255, 255, 255, 0.7); /* Light semi-transparent card */
+            border: 1px solid #e2e8f0; /* Slate border */
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease-in-out;
+        }
+
+        .card-tech:hover:not(.no-hover) {
+            transform: translateY(-5px) scale(1.02);
+            border-color: #2c5282;
+            box-shadow: 0 4px 25px rgba(44, 82, 130, 0.15);
+        }
+        
+        /* Custom scrollbar */
+        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #a0aec0; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2c5282; }
+        
+        /* Animation */
+        .fade-in { animation: fadeInAnimation 0.5s ease-in-out; }
+        @keyframes fadeInAnimation {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 
 <body>
 
+    <!-- Container chính của ứng dụng -->
     <div id="app-container" class="min-h-screen">
 
+        <!-- Màn hình tải -->
         <div id="loading-screen" class="fixed inset-0 bg-[#e0f7fa] z-50 flex items-center justify-center">
             <div class="flex flex-col items-center">
                  <svg class="h-16 w-16 text-[#2c5282] animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -26,14 +72,16 @@
             </div>
         </div>
 
+        <!-- Màn hình Đăng nhập / Đăng ký -->
         <div id="auth-screen" class="hidden min-h-screen flex items-center justify-center p-4 fade-in">
             <div class="w-full max-w-md">
                 <div class="card-tech rounded-2xl shadow-xl p-8 no-hover">
                     <div class="flex items-center justify-center mb-6">
-                        <svg class="h-10 w-10 text-[#2c5282]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l-1.414-1.414M19.778 19.778l-1.414-1.414M19.778 5.636l-1.414 1.414M5.636 19.778l-1.414-1.414" /></svg>
-                        <h1 class="ml-3 text-3xl font-bold glow-text">QuizMatrix</h1>
+                        <!-- THAY ĐỔI LOGO: Thay đổi src="..." bằng đường dẫn đến logo của bạn -->
+                        <img src="Logo.png" alt="Logo Công ty" class="h-20">
                     </div>
 
+                    <!-- Tabs -->
                     <div class="mb-6 border-b border-gray-200">
                         <nav class="flex -mb-px space-x-6">
                             <button id="login-tab-btn" class="py-4 px-1 border-b-2 font-medium text-lg border-[#2c5282] text-[#2c5282]">Đăng Nhập</button>
@@ -41,6 +89,7 @@
                         </nav>
                     </div>
 
+                    <!-- Form -->
                     <form id="login-form" class="space-y-6">
                         <div>
                             <label for="login-email" class="text-sm font-medium text-gray-700">Email</label>
@@ -68,13 +117,15 @@
             </div>
         </div>
 
+        <!-- Màn hình chính (sau khi đăng nhập) -->
         <div id="main-screen" class="hidden fade-in">
+            <!-- Header -->
             <header class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-40 border-b border-gray-200">
                 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center justify-between h-20">
                         <div class="flex items-center">
-                           <svg class="h-8 w-8 text-[#2c5282]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l-1.414-1.414M19.778 19.778l-1.414-1.414M19.778 5.636l-1.414 1.414M5.636 19.778l-1.414-1.414" /></svg>
-                            <h1 class="ml-3 text-2xl font-bold glow-text">QuizMatrix</h1>
+                           <!-- THAY ĐỔI LOGO: Thay đổi src="..." bằng đường dẫn đến logo của bạn -->
+                           <img src="Logo.png" alt="Logo Công ty" class="h-20">
                         </div>
                         <div class="flex items-center space-x-4">
                             <span id="user-email" class="text-md font-medium text-gray-700 hidden sm:block"></span>
@@ -84,18 +135,21 @@
                 </div>
             </header>
 
+            <!-- Lựa chọn bài thi -->
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div class="text-center mb-12">
                     <h2 class="text-4xl md:text-5xl font-extrabold glow-text tracking-tight">CHỌN BÀI KIỂM TRA</h2>
-                    <p class="mt-4 text-lg text-gray-600">Hãy chọn một thử thách để bắt đầu hành trình chinh phục kiến thức của bạn.</p>
+                    <p class="mt-4 text-lg text-gray-600">Website kiểm tra nội bộ Công ty Cổ phần Dịch vụ Công nghệ Viễn thông JTSC.</p>
                 </div>
 
                 <div id="quiz-selection-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                    </div>
+                    <!-- Các thẻ bài thi sẽ được render vào đây bằng JS -->
+                </div>
             </div>
 
 
-            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <!-- Khu vực hiển thị kết quả cũ -->
+             <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div class="flex justify-between items-center mb-6">
                     <h3 class="text-3xl font-bold glow-text">Lịch sử làm bài</h3>
                     <button id="delete-history-btn" class="hidden bg-red-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed">Xóa Tất Cả</button>
@@ -107,6 +161,7 @@
             </div>
         </div>
         
+        <!-- Màn hình làm bài trắc nghiệm -->
         <div id="quiz-screen" class="hidden fade-in">
              <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -136,6 +191,7 @@
             </div>
         </div>
 
+        <!-- Màn hình kết quả -->
         <div id="result-screen" class="hidden min-h-screen flex items-center justify-center p-4 fade-in">
             <div class="card-tech rounded-2xl shadow-xl p-8 text-center max-w-4xl w-full no-hover">
                 <h2 class="text-4xl font-extrabold glow-text">HOÀN THÀNH</h2>
@@ -164,10 +220,12 @@
                     </div>
                 </div>
 
+                <!-- Chi tiết bài làm -->
                 <div class="mt-8 w-full text-left">
                     <h3 class="text-2xl font-bold glow-text mb-4 text-center">Chi tiết bài làm</h3>
                     <div id="result-details-container" class="max-h-[40vh] overflow-y-auto custom-scrollbar space-y-4 pr-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                        </div>
+                        <!-- Details will be rendered here -->
+                    </div>
                 </div>
                 
                 <div class="mt-8">
@@ -176,12 +234,14 @@
             </div>
         </div>
         
+        <!-- Màn hình xem lại bài làm -->
         <div id="review-screen" class="hidden fade-in min-h-screen">
             <header class="bg-white/80 backdrop-blur-md shadow-lg sticky top-0 z-40 border-b border-gray-200">
                 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
                     <div class="flex items-center justify-between h-20">
                         <div class="flex items-center">
-                           <svg class="h-8 w-8 text-[#2c5282]" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M12 6V3m0 18v-3M5.636 5.636l-1.414-1.414M19.778 19.778l-1.414-1.414M19.778 5.636l-1.414 1.414M5.636 19.778l-1.414-1.414" /></svg>
+                           <!-- THAY ĐỔI LOGO: Thay đổi src="..." bằng đường dẫn đến logo của bạn -->
+                           <img src="Logo.png" alt="Logo Công ty" class="h-20">
                             <h1 id="review-title" class="ml-3 text-2xl font-bold glow-text">Xem Lại Bài Làm</h1>
                         </div>
                         <button id="back-from-review-btn" class="bg-blue-700 text-white font-bold py-2 px-6 rounded-lg hover:bg-blue-800 transition-transform transform hover:scale-105">Quay Lại</button>
@@ -191,7 +251,8 @@
             <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <div id="review-content-container" class="card-tech p-6 rounded-2xl shadow-lg no-hover">
                     <div id="review-content" class="space-y-8">
-                        </div>
+                        <!-- Nội dung xem lại sẽ được render vào đây -->
+                    </div>
                 </div>
             </div>
         </div>
