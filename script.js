@@ -1637,7 +1637,7 @@ async function getGeminiResponse(userMessage) {
         console.error("Error calling Google Gemini API:", error);
         const typingIndicator = document.getElementById('typing-indicator');
         if (typingIndicator) typingIndicator.parentElement.remove();
-        appendMessage(`Rất tiếc, đã có lỗi xảy ra. Vui lòng kiểm tra lại Console.`, 'bot');
+        appendMessage(`Đợi tôi chút nhé!`, 'bot');
     } finally {
         chatbotSendBtn.disabled = false;
     }
