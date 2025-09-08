@@ -1161,22 +1161,6 @@ const loginForm = document.getElementById('login-form');
             }
         });
 
-// --- AUTH LOGIC ---
-onAuthStateChanged(auth, async (user) => {
-    screens.loading.classList.add('hidden');
-    const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
-    if (user) {
-        document.getElementById('user-email').textContent = user.email;
-        renderQuizSelection();
-        await loadPastResults(user.uid);
-        showScreen('main');
-        chatbotToggleBtn.classList.remove('hidden');
-    } else {
-        showScreen('auth');
-        chatbotToggleBtn.classList.add('hidden');
-    }
-});
-
 // --- QUIZ LOGIC ---
 
 function renderQuizSelection() {
