@@ -55,3 +55,23 @@ body {
     background-color: #f1f5f9;
     color: #334155;
 }
+/* Thêm vào cuối tệp style.css */
+
+/* Kiểu dáng cho tùy chọn được chọn */
+.option-selected {
+    border-color: #2c5282; /* Màu viền đậm hơn */
+    background-color: #dbeafe; /* Nền màu xanh nhạt (Tailwind blue-100) */
+    font-weight: 500; /* In đậm chữ một chút */
+    transform: scale(1.01); /* Phóng to nhẹ để tạo hiệu ứng nổi bật */
+    box-shadow: 0 2px 8px rgba(44, 82, 130, 0.1);
+}
+
+/* Thêm transition mượt mà cho các tùy chọn khi hover và chọn */
+.quiz-option-label {
+    transition: all 0.2s ease-in-out;
+    border: 2px solid transparent; /* Thêm viền trong suốt để tránh nhảy layout khi thêm viền thật */
+}
+
+.quiz-option-label:hover {
+     border-color: #a0aec0; /* Viền xám khi di chuột qua */
+}

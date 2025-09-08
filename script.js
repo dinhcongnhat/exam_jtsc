@@ -1299,14 +1299,14 @@ function renderQuiz() {
     const questionNav = document.getElementById('question-nav');
     questionsContainer.innerHTML = '';
     questionNav.innerHTML = '';
-
+  
     currentQuestions.forEach((q, index) => {
         const questionElement = document.createElement('div');
         questionElement.id = `question-${index}`;
         questionElement.className = 'mb-8 p-6 border-b border-gray-200 last:border-b-0';
         
-        let optionsHTML = q.options.map((opt, optIndex) => `
-            <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer hover:bg-blue-100/50 transition-colors">
+         let optionsHTML = q.options.map((opt, optIndex) => `
+            <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer bg-white shadow-sm quiz-option-label">
                 <input type="radio" name="q_${index}" value="${optIndex}" class="form-radio h-5 w-5 border-gray-300 text-[#2c5282] focus:ring-[#2c5282]">
                 <span class="text-gray-700">${opt}</span>
             </label>
@@ -1338,6 +1338,10 @@ function renderQuiz() {
             const questionIndex = parseInt(e.target.name.split('_')[1]);
             if(!userAnswers[questionIndex]) userAnswers[questionIndex] = {};
             userAnswers[questionIndex].answer = parseInt(e.target.value);
+            const questionElement = document.getElementById(`question-${questionIndex}`);
+            const allOptionLabels = questionElement.querySelectorAll('.quiz-option-label');
+            label.classList.remove('option-selected');
+            e.target.closest('.quiz-option-label').classList.add('option-selected');
             updateNavButton(questionIndex);
         }
     });
