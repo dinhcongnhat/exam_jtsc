@@ -581,7 +581,7 @@ const allQuizzes = {
   ]
 },
         
-    exam3: {
+    Exam3: {
   "title": "Đề 3",
   "description": "Đề bài gồm 50 câu, thời gian làm bài 100 phút!",
   "questions": [
@@ -1120,48 +1120,58 @@ const screens = {
     review: document.getElementById('review-screen')
 };
 const loginForm = document.getElementById('login-form');
-        const registerForm = document.getElementById('register-form');
-        const authError = document.getElementById('auth-error');
-        const loginTabBtn = document.getElementById('login-tab-btn');
-        const registerTabBtn = document.getElementById('register-tab-btn');
-        const logoutBtn = document.getElementById('logout-btn');
-        const backToHomeBtn = document.getElementById('back-to-home-btn');
-        const submitQuizBtn = document.getElementById('submit-quiz-btn');
-        const quizSelectionContainer = document.getElementById('quiz-selection-container');
-        const resultsListContainer = document.getElementById('results-list');
-        const backFromReviewBtn = document.getElementById('back-from-review-btn');
-        const deleteHistoryBtn = document.getElementById('delete-history-btn');
-        const exitQuizBtn = document.getElementById('exit-quiz-btn');
-        const questionsContainer = document.getElementById('questions-container');
-         const toggleNavBtn = document.getElementById('toggle-nav-btn');
-        const collapsibleNav = document.getElementById('collapsible-nav');
-        const navArrowUp = document.getElementById('nav-arrow-up');
-        const navArrowDown = document.getElementById('nav-arrow-down');
+const registerForm = document.getElementById('register-form');
+const authError = document.getElementById('auth-error');
+const loginTabBtn = document.getElementById('login-tab-btn');
+const registerTabBtn = document.getElementById('register-tab-btn');
+const logoutBtn = document.getElementById('logout-btn');
+const backToHomeBtn = document.getElementById('back-to-home-btn');
+const submitQuizBtn = document.getElementById('submit-quiz-btn');
+const quizSelectionContainer = document.getElementById('quiz-selection-container');
+const resultsListContainer = document.getElementById('results-list');
+const backFromReviewBtn = document.getElementById('back-from-review-btn');
+const deleteHistoryBtn = document.getElementById('delete-history-btn');
+const exitQuizBtn = document.getElementById('exit-quiz-btn');
+const questionsContainer = document.getElementById('questions-container');
+const collapsibleNav = document.getElementById('collapsible-nav');
+const navArrowUp = document.getElementById('nav-arrow-up');
+const navArrowDown = document.getElementById('nav-arrow-down');
+const toggleNavBtn = document.getElementById('toggle-nav-btn');
+toggleNavBtn.addEventListener('click', () => {
+  collapsibleNav.classList.toggle('open');
+  navArrowUp.classList.toggle('hidden');
+  navArrowDown.classList.toggle('hidden');
+});
+function showScreen(screenName) {
+  Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+  if (screens[screenName]) {
+       screens[screenName].classList.remove('hidden');
+       if(screenName === 'quiz') {
+          screens[screenName].classList.add('flex');
+       } else {
+          screens[screenName].classList.remove('items-center');
+       }
+  }
+}
 
-        toggleNavBtn.addEventListener('click', () => {
-            collapsibleNav.classList.toggle('open');
-            navArrowUp.classList.toggle('hidden');
-            navArrowDown.classList.toggle('hidden');
-        });
-        function showScreen(screenName) {
-            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
-            if (screens[screenName]) {
-                 screens[screenName].classList.remove('hidden');
-                 if(screenName === 'quiz') {
-                    screens[screenName].classList.add('flex');
-                 } else {
-                    screens[screenName].classList.remove('flex');
-                 }
-            }
-        }
-        exitQuizBtn.addEventListener('click', () => {
-            if (confirm('Bạn có chắc chắn muốn thoát? Toàn bộ tiến trình làm bài sẽ bị mất.')) {
-                clearInterval(timerInterval);
-                showScreen('main');
-            }
-        });
+// --- AUTH LOGIC ---
+onAuthStateChanged(auth, async (user) => {
+    screens.loading.classList.add('hidden');
+    const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
+    if (user) {
+        document.getElementById('user-email').textContent = user.email;
+        renderQuizSelection();
+        await loadPastResults(user.uid);
+        showScreen('main');
+        chatbotToggleBtn.classList.remove('hidden');
+    } else {
+        showScreen('auth');
+        chatbotToggleBtn.classList.add('hidden');
+    }
+});
 
 // --- QUIZ LOGIC ---
+
 
 function renderQuizSelection() {
     quizSelectionContainer.innerHTML = '';
@@ -1178,6 +1188,13 @@ function renderQuizSelection() {
     }
 }
 
+//Thoát chương trình
+exitQuizBtn.addEventListener('click', () => {
+  if (confirm('Bạn có chắc chắn muốn thoát? Toàn bộ tiến trình làm bài sẽ bị mất.')) {
+      clearInterval(timerInterval);
+      showScreen('main');
+  }
+});
 quizSelectionContainer.addEventListener('click', (e) => {
     if (e.target.classList.contains('start-quiz-btn')) {
         const quizId = e.target.dataset.quizId;
@@ -1193,7 +1210,7 @@ function startQuiz(quizId) {
     userAnswers = {};
     renderQuiz();
     showScreen('quiz');
-    const quizDuration = 60 * 100;
+    const quizDuration = 60*100;
     startTimer(quizDuration, document.getElementById('timer'));
 }
 

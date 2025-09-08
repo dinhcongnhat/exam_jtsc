@@ -1,69 +1,69 @@
- body {
-            font-family: 'Roboto', sans-serif;
-            background-image: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
-            color: #1a202c;
-            scroll-behavior: smooth;
-        }
-        
-        #main-screen, #review-screen, #result-screen, #auth-screen, #quiz-screen {
-             background-image: url('https://www.transparenttextures.com/patterns/subtle-prism.png'), linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
-            background-attachment: fixed;
-        }
+body {
+    font-family: 'Roboto', sans-serif;
+    background-image: linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
+    color: #1a202c;
+    scroll-behavior: smooth;
+}
 
-        .glow-text {
-            font-family: 'Montserrat', sans-serif;
-            color: #2c5282;
-            text-shadow: 0 0 8px rgba(44, 82, 130, 0.3);
-        }
+#main-screen, #review-screen, #result-screen, #auth-screen, #quiz-screen {
+     background-image: url('https://www.transparenttextures.com/patterns/subtle-prism.png'), linear-gradient(135deg, #e0f7fa 0%, #e8eaf6 100%);
+    background-attachment: fixed;
+}
 
-        .card-tech {
-            background: rgba(255, 255, 255, 0.7);
-            border: 1px solid #e2e8f0;
-            backdrop-filter: blur(10px);
-            transition: all 0.3s ease-in-out;
-        }
+.glow-text {
+    font-family: 'Montserrat', sans-serif;
+    color: #2c5282;
+    text-shadow: 0 0 8px rgba(44, 82, 130, 0.3);
+}
 
-        .card-tech:hover:not(.no-hover) {
-            transform: translateY(-5px) scale(1.02);
-            border-color: #2c5282;
-            box-shadow: 0 4px 25px rgba(44, 82, 130, 0.15);
-        }
-        
-        .custom-scrollbar::-webkit-scrollbar { width: 8px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #a0aec0; border-radius: 10px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2c5282; }
-        
-        .fade-in { animation: fadeInAnimation 0.5s ease-in-out; }
-        @keyframes fadeInAnimation {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+.card-tech {
+    background: rgba(255, 255, 255, 0.7);
+    border: 1px solid #e2e8f0;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease-in-out;
+}
 
-        #chatbot-container {
-            transition: all 0.3s ease-in-out;
-            transform: translateY(1rem);
-            opacity: 0;
-        }
-        #chatbot-container.open {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .user-message {
-            background-color: #dbeafe;
-            color: #1e3a8a;
-        }
-        .bot-message {
-            background-color: #f1f5f9;
-            color: #334155;
-        }
+.card-tech:hover:not(.no-hover) {
+    transform: translateY(-5px) scale(1.02);
+    border-color: #2c5282;
+    box-shadow: 0 4px 25px rgba(44, 82, 130, 0.15);
+}
 
-        /* Collapsible Navigation Panel */
-        #collapsible-nav {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
-        }
-        #collapsible-nav.open {
-            max-height: 500px; /* Adjust if more space is needed */
-        }
+.custom-scrollbar::-webkit-scrollbar { width: 8px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: #e2e8f0; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #a0aec0; border-radius: 10px; }
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #2c5282; }
+
+.fade-in { animation: fadeInAnimation 0.5s ease-in-out; }
+@keyframes fadeInAnimation {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+#chatbot-container {
+    transition: all 0.3s ease-in-out;
+    transform: translateY(1rem);
+    opacity: 0;
+}
+#chatbot-container.open {
+    opacity: 1;
+    transform: translateY(0);
+}
+.user-message {
+    background-color: #dbeafe;
+    color: #1e3a8a;
+}
+.bot-message {
+    background-color: #f1f5f9;
+    color: #334155;
+}
+
+/* Collapsible Navigation Panel */
+#collapsible-nav {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease-in-out;
+}
+#collapsible-nav.open {
+    max-height: 500px; /* Adjust if more space is needed */
+}
