@@ -1319,12 +1319,13 @@ backToHomeBtn.addEventListener('click', async () => {
     if (auth.currentUser) await loadPastResults(auth.currentUser.uid);
     showScreen('main');
 });
+
 function renderQuiz() {
     const questionsContainer = document.getElementById('questions-container');
     const questionNav = document.getElementById('question-nav');
     questionsContainer.innerHTML = '';
     questionNav.innerHTML = '';
-  
+
     currentQuestions.forEach((q, index) => {
         const questionElement = document.createElement('div');
         questionElement.id = `question-${index}`;
@@ -1358,18 +1359,16 @@ function renderQuiz() {
         questionNav.appendChild(navBtn);
     });
     
-    questionsContainer.addEventListener('change', (e) => {
+   questionsContainer.addEventListener('change', (e) => {
         if (e.target.type === 'radio') {
             const questionIndex = parseInt(e.target.name.split('_')[1]);
             if(!userAnswers[questionIndex]) userAnswers[questionIndex] = {};
             userAnswers[questionIndex].answer = parseInt(e.target.value);
-            const questionElement = document.getElementById(`question-${questionIndex}`);
-            const allOptionLabels = questionElement.querySelectorAll('.quiz-option-label');
-            label.classList.remove('option-selected');
-            e.target.closest('.quiz-option-label').classList.add('option-selected');
             updateNavButton(questionIndex);
         }
     });
+
+
 
     questionsContainer.addEventListener('click', (e) => {
         const flagBtn = e.target.closest('.flag-btn');
