@@ -1326,58 +1326,73 @@ function renderQuiz() {
     questionsContainer.innerHTML = '';
     questionNav.innerHTML = '';
 
+    // Reset userAnswers mỗi lần render mới
+    userAnswers = [];
+
     currentQuestions.forEach((q, index) => {
         const questionElement = document.createElement('div');
         questionElement.id = `question-${index}`;
         questionElement.className = 'mb-8 p-6 border-b border-gray-200 last:border-b-0';
         
-         let optionsHTML = q.options.map((opt, optIndex) => `
-            <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer bg-white shadow-sm quiz-option-label">
-                <input type="radio" name="q_${index}" value="${optIndex}" class="form-radio h-5 w-5 border-gray-300 text-[#2c5282] focus:ring-[#2c5282]">
-                <span class="text-gray-700">${opt}</span>
-            </label>
-        `).join('');
+        let optionsHTML = q.options.map((opt, optIndex) => {
+            const checked = (userAnswers[index]?.answer === optIndex) ? 'checked' : '';
+            return `
+                <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer bg-white shadow-sm quiz-option-label">
+                    <input type="radio" name="q_${index}" value="${optIndex}" ${checked} 
+                           class="form-radio h-5 w-5 border-gray-300 text-[#2c5282] focus:ring-[#2c5282]">
+                    <span class="text-gray-700">${opt}</span>
+                </label>
+            `;
+        }).join('');
 
         questionElement.innerHTML = `
             <div class="flex justify-between items-start mb-4">
                 <h4 class="text-lg font-semibold text-gray-800"><span class="glow-text">Câu ${index + 1}:</span> ${q.question}</h4>
                 <button class="flag-btn p-2 rounded-full hover:bg-yellow-400/20" data-index="${index}">
-                    <svg class="w-6 h-6 text-gray-400 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/></svg>
+                    <svg class="w-6 h-6 transition-colors ${userAnswers[index]?.flagged ? 'text-yellow-500' : 'text-gray-400'}" 
+                         fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6H8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+                    </svg>
                 </button>
             </div>
             <div class="space-y-2 mt-4">${optionsHTML}</div>
         `;
         questionsContainer.appendChild(questionElement);
 
+        // Tạo button nav
         const navBtn = document.createElement('button');
         navBtn.id = `nav-btn-${index}`;
-        navBtn.className = 'w-10 h-10 flex items-center justify-center rounded-lg border-2 border-gray-300 text-gray-500 font-semibold transition-colors';
+        navBtn.className = 'w-10 h-10 flex items-center justify-center rounded-lg border-2 text-gray-500 font-semibold transition-colors';
         navBtn.textContent = index + 1;
         navBtn.addEventListener('click', () => {
             questionElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
         });
         questionNav.appendChild(navBtn);
+
+        updateNavButton(index);
     });
-    
-   questionsContainer.addEventListener('change', (e) => {
+
+    // Sự kiện chọn đáp án
+    questionsContainer.addEventListener('change', (e) => {
         if (e.target.type === 'radio') {
             const questionIndex = parseInt(e.target.name.split('_')[1]);
-            if(!userAnswers[questionIndex]) userAnswers[questionIndex] = {};
+            if (!userAnswers[questionIndex]) userAnswers[questionIndex] = {};
             userAnswers[questionIndex].answer = parseInt(e.target.value);
             updateNavButton(questionIndex);
         }
     });
 
-
-
+    // Sự kiện flag
     questionsContainer.addEventListener('click', (e) => {
         const flagBtn = e.target.closest('.flag-btn');
         if (flagBtn) {
             const questionIndex = parseInt(flagBtn.dataset.index);
-            if(!userAnswers[questionIndex]) userAnswers[questionIndex] = {};
+            if (!userAnswers[questionIndex]) userAnswers[questionIndex] = {};
             userAnswers[questionIndex].flagged = !userAnswers[questionIndex].flagged;
-            flagBtn.querySelector('svg').classList.toggle('text-yellow-500', userAnswers[questionIndex].flagged);
-            flagBtn.querySelector('svg').classList.toggle('text-gray-400', !userAnswers[questionIndex].flagged);
+            const svg = flagBtn.querySelector('svg');
+            svg.classList.toggle('text-yellow-500', userAnswers[questionIndex].flagged);
+            svg.classList.toggle('text-gray-400', !userAnswers[questionIndex].flagged);
             updateNavButton(questionIndex);
         }
     });
@@ -1386,11 +1401,16 @@ function renderQuiz() {
 function updateNavButton(index) {
     const navBtn = document.getElementById(`nav-btn-${index}`);
     const state = userAnswers[index];
-    navBtn.className = 'w-10 h-10 flex items-center justify-center rounded-lg border-2 font-semibold transition-colors ';
-    if (state && state.flagged) navBtn.classList.add('bg-yellow-400', 'border-yellow-500', 'text-black');
-    else if (state && state.answer !== undefined) navBtn.classList.add('bg-green-500', 'border-green-600', 'text-white');
-    else navBtn.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
+    navBtn.className = 'w-10 h-10 flex items-center justify-center rounded-lg border-2 font-semibold transition-colors';
+    if (state && state.flagged) {
+        navBtn.classList.add('bg-yellow-400', 'border-yellow-500', 'text-black');
+    } else if (state && state.answer !== undefined) {
+        navBtn.classList.add('bg-green-500', 'border-green-600', 'text-white');
+    } else {
+        navBtn.classList.add('bg-white', 'border-gray-300', 'text-gray-500');
+    }
 }
+
 
 function startTimer(duration, display) {
     let timer = duration;
