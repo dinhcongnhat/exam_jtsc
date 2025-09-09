@@ -75,9 +75,9 @@ const allQuizzes = {
          ]
     },
     exam2: {
-  "title": "Đề 2",
-  "description": "Đề bài gồm 50 câu, thời gian làm bài 100 phút!",
-  "questions": [
+        title: "Đề 2",
+        description: "Đề bài gồm 50 câu, thời gian làm bài 100 phút!",
+        questions: [
     {
       "question": "Theo các hiệp định mà Việt Nam có mở cửa thị trường mua sắm chính phủ (đấu thầu), nhà thầu nước ngoài được tham gia đấu thầu tại Việt Nam trong:",
       "options": [
@@ -299,7 +299,7 @@ const allQuizzes = {
       "correctAnswer": 3
     },
     {
-      "question": "Đối với đấu thầu qua mạng, nội dung nào sau đây do Hệ thống tự động đánh giá?",
+      "question": "Đối với đấu thầu qua mạng, nội dung nào do Hệ thống tự động đánh giá?",
       "options": [
         "Bảo đảm dự thầu",
         "Thỏa thuận liên danh đối với nhà thầu liên danh",
@@ -369,7 +369,7 @@ const allQuizzes = {
       "correctAnswer": 2
     },
     {
-      "question": "Đối với gói thầu tổ chức đấu thầu rộng rãi qua mạng, trường hợp tại thời điểm đóng thầu mà không có nhà thầu nộp E-HSDT thì chủ đầu tư quyết định theo phương án nào sau đây?",
+      "question": "Đối với gói thầu tổ chức đấu thầu qua mạng, trường hợp tại thời điểm đóng thầu mà không có nhà thầu nộp E-HSDT thì chủ đầu tư quyết định theo phương án nào sau đây?",
       "options": [
         "Hủy E-TBMT",
         "Chuyển sang hình thức đấu thầu rộng rãi không qua mạng",
@@ -581,10 +581,10 @@ const allQuizzes = {
   ]
 },
         
-    Exam3: {
-  "title": "Đề 3",
-  "description": "Đề bài gồm 50 câu, thời gian làm bài 100 phút!",
-  "questions": [
+    exam3: {
+    title: "Đề 3",
+      description: "Đề bài gồm 50 câu, thời gian làm bài 100 phút!",
+      questions: [
     {
       "question": "Chi phí giải quyết kiến nghị được nhà thầu nộp cho chủ thể nào sau đây?",
       "options": [
@@ -803,7 +803,7 @@ const allQuizzes = {
         "Bằng giá trị của phần công việc còn lại được cập nhật giá tại thời điểm áp dụng hình thức chỉ định thầu",
         "Bằng giá trị ghi trong hợp đồng trừ đi giá trị của phần công việc đã thực hiện trước đó theo dự toán được duyệt"
       ],
-      "correctAnswer": 0
+ "correctAnswer": 0
     },
     {
       "question": "Đối với nhà thầu liên danh, trường hợp trong quá trình thực hiện hợp đồng cần đẩy nhanh tiến độ thực hiện so với hợp đồng đã ký (cần sửa đổi hợp đồng) thì cần thực hiện như thế nào?",
@@ -951,7 +951,7 @@ const allQuizzes = {
         "Phê duyệt kế hoạch lựa chọn nhà thầu",
         "Giải quyết kiến nghị và xử lý các vi phạm pháp luật về đấu thầu",
         "Quyết định việc hủy thầu khi thay đổi mục tiêu đầu tư trong quyết định đầu tư",
-        "Quyết định việc hủy thầu, đình chỉ cuộc đấu thầu, không công nhận kết quả lựa chọn nhà thầu khi phát hiện có hành vi vi phạm pháp luật về đấu thầu"
+        "Quyết định việc hủy thầu, đình chỉ cuộc thầu, không công nhận kết quả lựa chọn nhà thầu khi phát hiện có hành vi vi phạm pháp luật về đấu thầu"
       ],
       "correctAnswer": 2
     },
@@ -1576,6 +1576,7 @@ logoutBtn.addEventListener('click', () => signOut(auth));
 // --- CHATBOT LOGIC (MODIFIED FOR GOOGLE GEMINI) ---
 const chatbotToggleBtn = document.getElementById('chatbot-toggle-btn');
 const chatbotContainer = document.getElementById('chatbot-container');
+const chatbotHeader = document.querySelector('#chatbot-container .bg-blue-700');
 const chatbotCloseBtn = document.getElementById('chatbot-close-btn');
 const chatbotForm = document.getElementById('chatbot-form');
 const chatbotInput = document.getElementById('chatbot-input');
@@ -1606,11 +1607,12 @@ chatbotForm.addEventListener('submit', (e) => {
 });
 
 function appendMessage(message, sender) {
+    const messagesContainer = document.querySelector('#chatbot-messages .relative.z-10');
     const messageWrapper = document.createElement('div');
-    messageWrapper.classList.add('flex', 'mb-2', 'max-w-full');
+    messageWrapper.classList.add('flex', 'mb-4', 'max-w-full'); // Increased margin bottom
     
     const messageElement = document.createElement('div');
-    messageElement.classList.add('p-3', 'rounded-lg', 'break-words');
+    messageElement.classList.add('p-4', 'rounded-lg', 'break-words', 'shadow-sm'); // Added padding and subtle shadow
 
     if (sender === 'user') {
         messageWrapper.classList.add('justify-end');
@@ -1628,17 +1630,13 @@ function appendMessage(message, sender) {
     }
     
     messageWrapper.appendChild(messageElement);
-    chatbotMessages.appendChild(messageWrapper);
+    messagesContainer.appendChild(messageWrapper);
     chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 }
 
 async function getGeminiResponse(userMessage) {
-    // --- CẤU HÌNH GOOGLE GEMINI API ---
-    const GEMINI_API_KEY = "AIzaSyAgmmVZ-IzSHeCwdG4BUQhmdnlaGm83dQA"; // Đảm bảo bạn đã thay key ở đây
-
-    // *** DÒNG ĐÃ SỬA LỖI ***
-    // Sử dụng 'gemini-1.5-flash' thay vì 'gemini-pro' đã lỗi thời
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const GEMINI_API_KEY = "AIzaSyCIAZp0_4gOUuMltP3UfBzfCngD858QUZk";
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`;
 
     if (GEMINI_API_KEY === "YOUR_GEMINI_API_KEY") {
         appendMessage("Lỗi: Vui lòng cấu hình API Key của Google Gemini trong mã nguồn.", 'bot');
@@ -1647,8 +1645,60 @@ async function getGeminiResponse(userMessage) {
 
     chatbotSendBtn.disabled = true;
     appendMessage('typing...', 'bot');
+
+    // Get current website content and context
+    const currentQuiz = currentQuizId ? allQuizzes[currentQuizId] : null;
+    const websiteContext = {
+        currentScreen: Object.entries(screens).find(([_, screen]) => !screen.classList.contains('hidden'))?.[0] || 'main',
+        currentQuiz: currentQuiz ? {
+            title: currentQuiz.title,
+            description: currentQuiz.description,
+            currentQuestion: currentQuestions ? currentQuestions.length : 0,
+            questions: currentQuestions || []
+        } : null,
+        userAnswers: userAnswers
+    };
     
-    chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
+    // Process user message for question-related queries
+    // Check for question number in user message
+    const questionMatch = userMessage.toLowerCase().match(/(?:câu|question|q|c[aâ]u)\s*(\d+)/i);
+    
+    let responseMessage = '';
+    if (questionMatch && currentQuizId && allQuizzes[currentQuizId]) {
+        const questionNum = parseInt(questionMatch[1]) - 1;
+        const quiz = allQuizzes[currentQuizId];
+        
+        if (questionNum >= 0 && questionNum < quiz.questions.length) {
+            const question = quiz.questions[questionNum];
+            const correctAnswerLetter = ['A', 'B', 'C', 'D'][question.correctAnswer];
+            responseMessage = `📝 Câu hỏi ${questionNum + 1}
+━━━━━━━━━━━━━━━━━━━━━━
+${question.question}
+
+🔍 Các phương án trả lời:
+
+A) ${question.options[0]}
+B) ${question.options[1]}
+C) ${question.options[2]}
+D) ${question.options[3]}
+
+✅ Đáp án chính xác: ${correctAnswerLetter}`;
+        }
+    }
+
+    const contextMessage = responseMessage || `Website Context: ${JSON.stringify(websiteContext)}
+User Query: ${userMessage}
+
+Instructions: 
+- If the user asks about a specific question, provide the question content, options, and the correct answer
+- If the user asks about an exam, provide the exam details
+- Help navigate the website and explain content
+- Maintain conversation in Vietnamese unless user speaks in English`;
+
+    chatHistory.push({ 
+        role: "user", 
+        parts: [{ text: contextMessage }] 
+    });
 
     try {
         const response = await fetch(API_URL, {
@@ -1657,7 +1707,13 @@ async function getGeminiResponse(userMessage) {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                contents: chatHistory
+                contents: chatHistory,
+                generationConfig: {
+                    temperature: 0.7,
+                    topK: 40,
+                    topP: 0.95,
+                    maxOutputTokens: 1024
+                }
             })
         });
 
@@ -1690,3 +1746,76 @@ async function getGeminiResponse(userMessage) {
         chatbotSendBtn.disabled = false;
     }
 }
+
+// Drag-and-drop functionality for chatbot
+let isDragging = false;
+let offsetX, offsetY;
+
+chatbotHeader.addEventListener('mousedown', (e) => {
+    isDragging = true;
+    offsetX = e.clientX - chatbotContainer.offsetLeft;
+    offsetY = e.clientY - chatbotContainer.offsetTop;
+    chatbotContainer.style.position = 'absolute';
+    chatbotContainer.style.zIndex = 1000;
+    
+    // Use CSS transform for better performance
+    chatbotContainer.style.transition = 'none';
+
+    function onMouseMove(e) {
+        if (!isDragging) return;
+        const x = e.clientX - offsetX;
+        const y = e.clientY - offsetY;
+        chatbotContainer.style.left = x + 'px';
+        chatbotContainer.style.top = y + 'px';
+    }
+
+    function onMouseUp() {
+        isDragging = false;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+        chatbotContainer.style.transition = '';
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+});
+
+const resizeHandle = document.getElementById('resize-handle');
+
+resizeHandle.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    const chatbotContainer = document.getElementById('chatbot-container');
+    
+    // Disable transitions for smooth resizing
+    chatbotContainer.style.transition = 'none';
+    
+    const minWidth = 300; // Minimum width
+    const minHeight = 400; // Minimum height
+    const startWidth = chatbotContainer.offsetWidth;
+    const startHeight = chatbotContainer.offsetHeight;
+    const startX = e.clientX;
+    const startY = e.clientY;
+
+    function onMouseMove(e) {
+        // Calculate new dimensions
+        const width = Math.max(minWidth, startWidth + (e.clientX - startX));
+        const height = Math.max(minHeight, startHeight + (e.clientY - startY));
+        
+        // Apply new dimensions directly without any delay
+        chatbotContainer.style.width = `${width}px`;
+        chatbotContainer.style.height = `${height}px`;
+        
+        // Prevent text selection during resize
+        e.preventDefault();
+    }
+
+    function onMouseUp() {
+        // Re-enable transitions after resize
+        chatbotContainer.style.transition = '';
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
+
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+});

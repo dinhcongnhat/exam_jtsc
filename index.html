@@ -210,12 +210,22 @@
     </button>
     <div id="chatbot-container" class="hidden fixed bottom-24 right-6 w-full max-w-sm h-[70vh] bg-white rounded-2xl shadow-2xl flex flex-col z-50">
         <div class="flex justify-between items-center p-4 bg-blue-700 text-white rounded-t-2xl">
-            <h3 class="font-bold text-lg">JTSC Assistant</h3>
+            <div class="flex items-center space-x-2">
+                <img src="Logo.png" alt="Logo" class="h-8 w-8 rounded-full">
+                <h3 class="font-bold text-lg">JTSC ASSISTANT</h3>
+            </div>
             <button id="chatbot-close-btn" class="text-white text-2xl font-bold hover:text-gray-200">&times;</button>
         </div>
-        <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto custom-scrollbar">
-            <div class="bot-message p-3 rounded-lg mb-2 max-w-xs break-words">
-                Xin chào! Tôi có thể giúp gì cho bạn?
+        <div id="chatbot-messages" class="flex-1 p-4 overflow-y-auto custom-scrollbar relative">
+            <!-- Background blurred logo -->
+            <div class="absolute inset-0 flex items-center justify-center pointer-events-none z-0 opacity-10">
+                <img src="Logo.png" alt="Watermark" class="w-32 h-32 blur-sm">
+            </div>
+            <!-- Messages container -->
+            <div class="relative z-10">
+                <div class="bot-message p-3 rounded-lg mb-2 max-w-xs break-words">
+                    Xin chào! Tôi có thể giúp gì cho bạn?
+                </div>
             </div>
         </div>
         <form id="chatbot-form" class="p-4 border-t border-gray-200">
@@ -224,6 +234,7 @@
                 <button type="submit" id="chatbot-send-btn" class="bg-blue-700 text-white px-4 rounded-r-lg hover:bg-blue-800 disabled:bg-blue-400">Gửi</button>
             </div>
         </form>
+        <div id="resize-handle" class="absolute bottom-0 right-0 w-4 h-4 bg-gray-300 cursor-se-resize"></div>
     </div>
         <script type="module" src="script.js">
     </script>
