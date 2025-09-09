@@ -1749,7 +1749,7 @@ Remember to maintain helpful, clear, and structured responses.`;
 
         if (!response.ok) {
             appendMessage(`Đợi tôi chút nhé!`, 'bot');
-            
+
             // Multiple retries with exponential backoff
             let retryAttempts = 0;
             const maxRetries = 3;
