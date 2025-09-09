@@ -1686,14 +1686,44 @@ D) ${question.options[3]}
         }
     }
 
-    const contextMessage = responseMessage || `Website Context: ${JSON.stringify(websiteContext)}
+    const contextMessage = responseMessage || `
+Current Context:
+${JSON.stringify({
+    screen: websiteContext.currentScreen,
+    quiz: websiteContext.currentQuiz ? {
+        title: websiteContext.currentQuiz.title,
+        currentQuestion: websiteContext.currentQuiz.currentQuestion,
+        totalQuestions: websiteContext.currentQuiz.questions.length,
+        progress: Object.keys(userAnswers).length
+    } : null,
+    lastMessages: chatHistory.slice(-3)
+}, null, 2)}
+
 User Query: ${userMessage}
 
-Instructions: 
-- If the user asks about a specific question, provide the question content, options, and the correct answer
-- If the user asks about an exam, provide the exam details
-- Help navigate the website and explain content
-- Maintain conversation in Vietnamese unless user speaks in English`;
+Instructions for Response:
+1. Quiz Context:
+   - If in a quiz, provide relevant information about current progress
+   - For question queries, analyze and explain thoroughly
+   - Mention time remaining if asked
+
+2. Response Format:
+   - Use clear sections with emoji icons
+   - Break down complex explanations
+   - Use bullet points for lists
+   - Add emphasis on important points using **bold**
+
+3. Language:
+   - Default to Vietnamese
+   - Match user's language choice
+   - Use formal but friendly tone
+
+4. Navigation Help:
+   - Explain interface elements
+   - Provide clear step-by-step guidance
+   - Reference visual elements user can see
+
+Remember to maintain helpful, clear, and structured responses.`;
 
     chatHistory.push({ 
         role: "user", 
@@ -1718,6 +1748,61 @@ Instructions:
         });
 
         if (!response.ok) {
+            appendMessage(`Đợi tôi chút nhé!`, 'bot');
+            
+            // Multiple retries with exponential backoff
+            let retryAttempts = 0;
+            const maxRetries = 3;
+            const baseDelay = 1000;
+            
+            const retryRequest = async () => {
+                if (retryAttempts >= maxRetries) {
+                    appendMessage("Xin lỗi, tôi đang gặp khó khăn trong việc xử lý. Hãy thử lại sau nhé!", 'bot');
+                    return;
+                }
+                
+                const delay = baseDelay * Math.pow(2, retryAttempts);
+                await new Promise(resolve => setTimeout(resolve, delay));
+                
+                try {
+                    const retryResponse = await fetch(API_URL, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{
+                                role: "user",
+                                parts: [{ text: userMessage }]
+                            }],
+                            generationConfig: {
+                                temperature: 0.5,
+                                topK: 30,
+                                topP: 0.9,
+                                maxOutputTokens: 800
+                            }
+                        })
+                    });
+                    
+                    if (retryResponse.ok) {
+                        const retryData = await retryResponse.json();
+                        if (retryData.candidates?.[0]?.content?.parts?.[0]) {
+                            const retryAnswer = retryData.candidates[0].content.parts[0].text.trim();
+                            appendMessage(retryAnswer, 'bot');
+                            return;
+                        }
+                    }
+                    
+                    retryAttempts++;
+                    retryRequest();
+                    
+                } catch (retryError) {
+                    console.error("Error in retry attempt:", retryError);
+                    retryAttempts++;
+                    retryRequest();
+                }
+            };
+            
+            retryRequest();
+            
             const errorData = await response.json();
             throw new Error(`HTTP error! status: ${response.status}, message: ${errorData.error.message}`);
         }
