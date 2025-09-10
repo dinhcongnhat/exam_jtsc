@@ -168,7 +168,7 @@ async function getGeminiResponse(userMessage) {
             console.error(`Attempt ${attempt} failed:`, error);
             if (attempt === MAX_RETRIES) {
                 if (typingIndicator) typingIndicator.parentElement.remove();
-                appendMessage("Hmm, có vẻ như tôi đang gặp chút trục trặc. Bạn vui lòng kiểm tra lại câu hỏi hoặc thử lại sau một lát nhé! 😥", 'bot');
+                appendMessage("Hmm, chưa kịp load hãy thử lại lần nữa nhé, hẹhẹ!😥", 'bot');
             } else {
                 await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
             }
