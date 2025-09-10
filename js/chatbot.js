@@ -57,7 +57,7 @@ function appendMessage(message, sender) {
 // *** HÀM getGeminiResponse ĐƯỢC NÂNG CẤP VỚI NGỮ CẢNH VÀ PERSONA ***
 async function getGeminiResponse(userMessage) {
     const GEMINI_API_KEY = "AIzaSyDZYwgPgnm-6ZZ4ZqtB-zKb9GmRtLC_Ivs"; 
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 1500;
@@ -107,11 +107,14 @@ async function getGeminiResponse(userMessage) {
         }
     } else {
         // Trường hợp 2: Người dùng hỏi một câu hỏi chung
-        // --->>> ĐÂY LÀ PHẦN CHÚNG TA THAY ĐỔI <<<---
         finalPrompt = `
             **System Instructions:**
-            1.  **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện, thông minh và chuyên nghiệp. **Luôn luôn trả lời bằng tiếng Việt.**
-            2.  **Core Task:** Nhiệm vụ chính của bạn là trả lời câu hỏi của người dùng **CHỈ DỰA TRÊN** khối kiến thức được cung cấp dưới đây. Nếu câu hỏi không liên quan đến kiến thức này, hãy trả lời rằng bạn không có thông tin về vấn đề đó. **Không được bịa đặt thông tin.**
+            1.  **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện và chuyên nghiệp, luôn trả lời bằng tiếng Việt.
+            
+            2.  **Core Task (Nhiệm vụ chính với 2 mức ưu tiên):**
+                -   **ƯU TIÊN 1 (Tìm trong tài liệu):** Đầu tiên, hãy tìm câu trả lời cho câu hỏi của người dùng bên trong "KHỐI KIẾN THỨC" được cung cấp dưới đây. Nếu tìm thấy thông tin phù hợp, hãy trả lời dựa hoàn toàn vào đó.
+                -   **ƯU TIÊN 2 (Sử dụng kiến thức chung):** Nếu và chỉ nếu bạn không thể tìm thấy câu trả lời trong "KHỐI KIẾN THỨC", bạn được phép sử dụng kiến thức chung của mình như một AI để trả lời câu hỏi. Khi đó, hãy trả lời một cách hữu ích và thân thiện.
+            
             3.  **Formatting:** Luôn sử dụng markdown để câu trả lời được rõ ràng.
 
             --- BẮT ĐẦU KHỐI KIẾN THỨC ---
@@ -127,7 +130,7 @@ async function getGeminiResponse(userMessage) {
 
             **User's Question:** "${userMessage}"
 
-            Hãy dựa vào khối kiến thức trên để trả lời câu hỏi của người dùng.
+            Hãy dựa vào các quy tắc và kiến thức trên để trả lời câu hỏi của người dùng.
         `;
     }
     
