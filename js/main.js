@@ -33,4 +33,5 @@ document.addEventListener('DOMContentLoaded', () => {
             ui.chatbotToggleBtn.classList.add('hidden'); // Ẩn nút chatbot
         }
     });
+    
 });

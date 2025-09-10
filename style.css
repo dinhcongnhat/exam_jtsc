@@ -42,7 +42,7 @@ body {
 
 #chatbot-container {
     width: 400px; /* Increased width */
-    max-width: 90%; /* Responsive design */
+    max-width: 80%; /* Responsive design */
     transition: all 0.3s ease-in-out;
     transform: translateY(1rem);
     opacity: 0;
@@ -93,3 +93,24 @@ body {
     background-color: #cbd5e1;
     cursor: se-resize;
 }
+ @keyframes pulse-shadow {
+            0% {
+                transform: scale(1);
+                /* Đây là giá trị của class "shadow-lg" trong Tailwind */
+                box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            }
+            50% {
+                transform: scale(1.05);
+                /* Đây là giá trị của class "shadow-2xl", tạo hiệu ứng bóng đậm hơn */
+                box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            }
+        }
+
+        .animate-pulse-custom {
+            /* Áp dụng animation, lặp lại vô hạn với thời gian 2.5 giây cho mỗi chu kỳ */
+            animation: pulse-shadow 1.5s infinite;
+        }

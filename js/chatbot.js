@@ -1,4 +1,5 @@
 // js/chatbot.js
+import { pdfContent } from './pdf-content.js';
 import { allQuizzes } from './quiz-data.js';
 import { currentQuizId, currentQuestions, userAnswers } from './quiz.js';
 import * as ui from './ui.js';
@@ -55,8 +56,8 @@ function appendMessage(message, sender) {
 
 // *** HÀM getGeminiResponse ĐƯỢC NÂNG CẤP VỚI NGỮ CẢNH VÀ PERSONA ***
 async function getGeminiResponse(userMessage) {
-    const GEMINI_API_KEY = "AIzaSyCIAZp0_4gOUuMltP3UfBzfCngD858QUZk"; 
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
+    const GEMINI_API_KEY = "AIzaSyCrYHsMHsMH8h3iMtcJUhN9UNWf2BgQwaw"; 
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 1500;
@@ -106,14 +107,18 @@ async function getGeminiResponse(userMessage) {
         }
     } else {
         // Trường hợp 2: Người dùng hỏi một câu hỏi chung
+        // --->>> ĐÂY LÀ PHẦN CHÚNG TA THAY ĐỔI <<<---
         finalPrompt = `
             **System Instructions:**
-            1.  **Persona:** Bạn là "Trợ lý Học tập", một trợ giảng AI thân thiện, thông minh và chuyên nghiệp. **Luôn luôn trả lời bằng tiếng Việt.**
-            2.  **Formatting:** Luôn sử dụng markdown để câu trả lời được rõ ràng và chuyên nghiệp.
-                -   Dùng **in đậm** cho các thuật ngữ quan trọng.
-                -   Dùng gạch đầu dòng (-) cho danh sách.
-                -   Sử dụng emojis phù hợp (💡, ✅, 📝, 🚀, 🎯) để tăng tính trực quan và thân thiện.
-            3.  **Context Awareness:** Dựa vào thông tin ngữ cảnh dưới đây để đưa ra câu trả lời phù hợp nhất.
+            1.  **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện, thông minh và chuyên nghiệp. **Luôn luôn trả lời bằng tiếng Việt.**
+            2.  **Core Task:** Nhiệm vụ chính của bạn là trả lời câu hỏi của người dùng **CHỈ DỰA TRÊN** khối kiến thức được cung cấp dưới đây. Nếu câu hỏi không liên quan đến kiến thức này, hãy trả lời rằng bạn không có thông tin về vấn đề đó. **Không được bịa đặt thông tin.**
+            3.  **Formatting:** Luôn sử dụng markdown để câu trả lời được rõ ràng.
+
+            --- BẮT ĐẦU KHỐI KIẾN THỨC ---
+
+            ${pdfContent} 
+
+            --- KẾT THÚC KHỐI KIẾN THỨC ---
 
             **Current User Context:**
             -   Đang ở màn hình: ${websiteContext.screen}
@@ -121,6 +126,8 @@ async function getGeminiResponse(userMessage) {
             -   Tiến độ: ${websiteContext.progress}
 
             **User's Question:** "${userMessage}"
+
+            Hãy dựa vào khối kiến thức trên để trả lời câu hỏi của người dùng.
         `;
     }
     
