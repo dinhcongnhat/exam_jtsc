@@ -149,7 +149,7 @@ function renderResultQuestion(q, index, userAnswersData) {
         return `
             <div class="${optionClasses}">
                 <input type="radio" name="review_q_${index}" value="${optIndex}" class="form-radio h-5 w-5 border-gray-300" ${userAnswerIndex === optIndex ? 'checked' : ''} disabled>
-                <span class="text-gray-800">${opt}</span>
+                <span class="text-gray-800">${opt.label || String.fromCharCode(65 + optIndex)}. ${opt.text || opt}</span>
             </div>`;
     }).join('');
 

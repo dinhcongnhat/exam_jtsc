@@ -29,7 +29,7 @@ function startQuiz(quizId) {
     currentQuizId = quizId;
     currentQuestions = [...allQuizzes[quizId].questions]; // Create a copy
     if (currentQuestions.length > 60) {
-        currentQuestions = currentQuestions.slice(0, 60);
+        currentQuestions = currentQuestions.slice(0, 100);
     }
 
     userAnswers = {};
@@ -52,7 +52,7 @@ function renderQuiz() {
         let optionsHTML = q.options.map((opt, optIndex) => `
             <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer bg-white shadow-sm quiz-option-label">
                 <input type="radio" name="q_${index}" value="${optIndex}" class="form-radio h-5 w-5 border-gray-300 text-[#2c5282] focus:ring-[#2c5282]">
-                <span class="text-gray-700">${opt}</span>
+                <span class="text-gray-700">${opt.label || String.fromCharCode(65 + optIndex)}. ${opt.text || opt}</span>
             </label>
         `).join('');
 

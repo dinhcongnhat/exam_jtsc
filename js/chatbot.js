@@ -86,7 +86,8 @@ async function getGeminiResponse(userMessage) {
     // --- BƯỚC 2: XÂY DỰNG PROMPT THÔNG MINH DỰA TRÊN NGỮ CẢNH ---
     let finalPrompt = '';
     const questionMatch = userMessage.toLowerCase().match(/(?:câu|question|q|c[aâ]u)\s*(\d+)/i);
-    
+    const getOptionText = (option) => option.text || option;
+
     if (questionMatch && websiteContext.quizActive) {
         // Trường hợp 1: Người dùng hỏi về một câu hỏi cụ thể trong bài thi
         const questionNum = parseInt(questionMatch[1]) - 1;
@@ -94,16 +95,42 @@ async function getGeminiResponse(userMessage) {
 
         if (questionNum >= 0 && questionNum < quiz.questions.length) {
             const q = quiz.questions[questionNum];
-            const correctAnswerLetter = ['A', 'B', 'C', 'D'][q.correctAnswer];
-            
-            const responseMessage = `📝 **Câu hỏi ${questionNum + 1}**\n━━━━━━━━━━━━━━━━━━━━━━\n${q.question}\n\n**Các phương án trả lời:**\n A) ${q.options[0]}\n B) ${q.options[1]}\n C) ${q.options[2]}\n D) ${q.options[3]}\n\n✅ **Đáp án chính xác:** ${correctAnswerLetter}`;
+            const correctAnswerLetter = String.fromCharCode(65 + q.correctAnswer);
+            const correctOptionText = getOptionText(q.options[q.correctAnswer]);
+
+            const optionsStringForDisplay = q.options.map((opt, index) => {
+                const label = String.fromCharCode(65 + index);
+                return `${label}) ${getOptionText(opt)}`;
+            }).join('\n');
+
+            const responseMessage = `📝 **Câu hỏi ${questionNum + 1}**\n━━━━━━━━━━━━━━━━━━━━━━\n${q.question}\n\n**Các phương án trả lời:**\n${optionsStringForDisplay}\n\n✅ **Đáp án chính xác:** ${correctAnswerLetter}`;
             
             if (typingIndicator) typingIndicator.parentElement.remove();
             appendMessage(responseMessage, 'bot');
             appendMessage('typing...', 'bot');
             typingIndicator = document.getElementById('typing-indicator');
-            
-            finalPrompt = `Với vai trò là một trợ giảng AI, hãy giải thích thật chi tiết tại sao đáp án "${q.options[q.correctAnswer]}" là đúng và các phương án còn lại là sai cho câu hỏi: "${q.question}".`;
+
+            finalPrompt = `
+                **System Instructions:**
+                1.  **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện, chuyên nghiệp, và luôn trả lời bằng tiếng Việt.
+                2.  **Core Task:** Nhiệm vụ của bạn là giải thích một câu hỏi trắc nghiệm. Hãy dựa vào "KHỐI KIẾN THỨC" được cung cấp dưới đây để tìm ra lý do tại sao đáp án đúng lại chính xác và các đáp án khác lại sai.
+                3.  **Formatting:** Sử dụng markdown (in đậm, gạch đầu dòng) để trình bày câu trả lời một cách rõ ràng, dễ hiểu. Bắt đầu bằng việc xác nhận đáp án đúng, sau đó giải thích chi tiết.
+
+                --- BẮT ĐẦU KHỐI KIẾN THỨC ---
+                ${pdfContent}
+                --- KẾT THÚC KHỐI KIẾN THỨC ---
+
+                **Câu hỏi cần giải thích:**
+                *   **Câu hỏi:** ${q.question}
+                *   **Các lựa chọn:**
+                    *   A) ${getOptionText(q.options[0])}
+                    *   B) ${getOptionText(q.options[1])}
+                    *   C) ${getOptionText(q.options[2])}
+                    *   D) ${getOptionText(q.options[3])}
+                *   **Đáp án đúng:** ${correctAnswerLetter} (${correctOptionText})
+
+                **Yêu cầu:** Hãy giải thích câu trả lời cho câu hỏi trên.
+            `;
         }
     } else {
         // Trường hợp 2: Người dùng hỏi một câu hỏi chung

@@ -114,3 +114,13 @@ body {
             /* Áp dụng animation, lặp lại vô hạn với thời gian 2.5 giây cho mỗi chu kỳ */
             animation: pulse-shadow 1.5s infinite;
         }
+
+        #header-title-text {
+            position: absolute;
+            left: 49%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(to right, #f97316, #ef4444, #db2777, #9333ea);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
