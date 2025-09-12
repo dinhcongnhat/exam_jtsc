@@ -1,281 +1,124 @@
 // js/chatbot.js
-import { pdfContent } from './pdf-content.js';
-import { allQuizzes } from './quiz-data.js';
-import { currentQuizId, currentQuestions, userAnswers } from './quiz.js';
-import * as ui from './ui.js';
+import { structuredLegalData } from './structured-legal-data.js';
 
-const chatbotContainer = document.getElementById('chatbot-container');
-const chatbotHeader = document.querySelector('#chatbot-container .bg-blue-700');
-const chatbotCloseBtn = document.getElementById('chatbot-close-btn');
-const chatbotForm = document.getElementById('chatbot-form');
-const chatbotInput = document.getElementById('chatbot-input');
-const chatbotSendBtn = document.getElementById('chatbot-send-btn');
-const chatbotMessages = document.getElementById('chatbot-messages');
-const resizeHandle = document.getElementById('resize-handle');
+const chatbox = document.getElementById('jts-chatbox');
+const chatMessages = document.getElementById('jts-chat-messages');
+const chatInput = document.getElementById('jts-chat-input');
+const sendBtn = document.getElementById('jts-send-btn');
+const chatbotToggle = document.getElementById('jts-chatbot-toggle');
+const chatbotContainer = document.getElementById('jts-chatbot-container');
 
-let chatHistory = [];
+// --- CÁC HÀM XỬ LÝ CHATBOT ---
 
-function toggleChatbot() {
-    chatbotContainer.classList.toggle('hidden');
+// Gửi tin nhắn đi
+function sendMessage() {
+    const query = chatInput.value.trim();
+    if (query === '') return;
+
+    appendMessage(query, 'user');
+    chatInput.value = '';
+
+    // Hiển thị "Thinking..." ngay lập tức
+    const thinkingIndicator = appendMessage('Đang tìm kiếm câu trả lời...', 'bot', true);
+
+    // Mô phỏng độ trễ và tìm câu trả lời
     setTimeout(() => {
-        chatbotContainer.classList.toggle('open');
-    }, 10);
-};
+        const answer = findAnswer(query);
+        // Xóa "Thinking..." và hiển thị câu trả lời thật
+        chatMessages.removeChild(thinkingIndicator);
+        appendMessage(answer, 'bot');
+    }, 500); // Độ trễ ngắn để tạo cảm giác tự nhiên
+}
 
-function appendMessage(message, sender) {
-    const messagesContainer = document.querySelector('#chatbot-messages .relative.z-10');
+// Thêm tin nhắn vào giao diện
+function appendMessage(text, sender, isThinking = false) {
     const messageWrapper = document.createElement('div');
-    messageWrapper.classList.add('flex', 'mb-4', 'max-w-full');
-    
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('p-4', 'rounded-lg', 'break-words', 'shadow-sm');
+    messageWrapper.classList.add('flex', 'mb-4');
 
+    let content;
     if (sender === 'user') {
         messageWrapper.classList.add('justify-end');
-        messageElement.classList.add('user-message', 'ml-auto');
-        messageElement.textContent = message;
+        content = `
+            <div class="bg-blue-500 text-white rounded-lg py-2 px-4 max-w-xs md:max-w-md lg:max-w-lg">
+                <p>${text}</p>
+            </div>
+        `;
     } else {
         messageWrapper.classList.add('justify-start');
-        messageElement.classList.add('bot-message', 'mr-auto');
-        if (message === 'typing...') {
-            messageElement.innerHTML = `<div class="flex items-center justify-center space-x-1"><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></div></div>`;
-            messageElement.id = 'typing-indicator';
-        } else {
-            // Cải tiến để render markdown tốt hơn
-            let formattedMessage = message
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // In đậm
-                .replace(/\n/g, '<br>'); // Xuống dòng
-            messageElement.innerHTML = formattedMessage;
-        }
-    }
-    
-    messageWrapper.appendChild(messageElement);
-    messagesContainer.appendChild(messageWrapper);
-    chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
-}
-
-// *** HÀM getGeminiResponse ĐƯỢC NÂNG CẤP VỚI NGỮ CẢNH VÀ PERSONA ***
-async function getGeminiResponse(userMessage) {
-    const GEMINI_API_KEY = "AIzaSyDZYwgPgnm-6ZZ4ZqtB-zKb9GmRtLC_Ivs"; 
-    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
-    const MAX_RETRIES = 3;
-    const RETRY_DELAY = 1500;
-
-    chatbotSendBtn.disabled = true;
-    appendMessage('typing...', 'bot');
-    let typingIndicator = document.getElementById('typing-indicator');
-
-    // --- BƯỚC 1: XÁC ĐỊNH NGỮ CẢNH HIỆN TẠI CỦA NGƯỜI DÙNG ---
-    const getCurrentScreen = () => {
-        for (const screenName in ui.screens) {
-            if (!ui.screens[screenName].classList.contains('hidden')) {
-                return screenName;
-            }
-        }
-        return 'unknown';
-    };
-
-    const websiteContext = {
-        screen: getCurrentScreen(),
-        quizActive: !!currentQuizId,
-        quizTitle: currentQuizId ? allQuizzes[currentQuizId].title : 'Không có',
-        progress: currentQuizId ? `Đã trả lời ${Object.keys(userAnswers).length}/${currentQuestions.length} câu` : 'Không áp dụng'
-    };
-
-    // --- BƯỚC 2: XÂY DỰNG PROMPT THÔNG MINH DỰA TRÊN NGỮ CẢNH ---
-    let finalPrompt = '';
-    const questionMatch = userMessage.toLowerCase().match(/(?:câu|question|q|c[aâ]u)\s*(\d+)/i);
-    const getOptionText = (option) => option.text || option;
-
-    if (questionMatch && websiteContext.quizActive) {
-        // Trường hợp 1: Người dùng hỏi về một câu hỏi cụ thể trong bài thi
-        const questionNum = parseInt(questionMatch[1]) - 1;
-        const quiz = allQuizzes[currentQuizId];
-
-        if (questionNum >= 0 && questionNum < quiz.questions.length) {
-            const q = quiz.questions[questionNum];
-            const correctAnswerLetter = String.fromCharCode(65 + q.correctAnswer);
-            const correctOptionText = getOptionText(q.options[q.correctAnswer]);
-
-            const optionsStringForDisplay = q.options.map((opt, index) => {
-                const label = String.fromCharCode(65 + index);
-                return `${label}) ${getOptionText(opt)}`;
-            }).join('\n');
-
-            const responseMessage = `📝 **Câu hỏi ${questionNum + 1}**\n━━━━━━━━━━━━━━━━━━━━━━\n${q.question}\n\n**Các phương án trả lời:**\n${optionsStringForDisplay}\n\n✅ **Đáp án chính xác:** ${correctAnswerLetter}`;
-            
-            if (typingIndicator) typingIndicator.parentElement.remove();
-            appendMessage(responseMessage, 'bot');
-            appendMessage('typing...', 'bot');
-            typingIndicator = document.getElementById('typing-indicator');
-
-            finalPrompt = `
-                **System Instructions:**
-                1.  **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện, chuyên nghiệp, và luôn trả lời bằng tiếng Việt.
-                2.  **Core Task:** Nhiệm vụ của bạn là giải thích một câu hỏi trắc nghiệm. Hãy dựa vào "KHỐI KIẾN THỨC" được cung cấp dưới đây để tìm ra lý do tại sao đáp án đúng lại chính xác và các đáp án khác lại sai.
-                3.  **Formatting:** Sử dụng markdown (in đậm, gạch đầu dòng) để trình bày câu trả lời một cách rõ ràng, dễ hiểu. Bắt đầu bằng việc xác nhận đáp án đúng, sau đó giải thích chi tiết.
-
-                --- BẮT ĐẦU KHỐI KIẾN THỨC ---
-                ${pdfContent}
-                --- KẾT THÚC KHỐI KIẾN THỨC ---
-
-                **Câu hỏi cần giải thích:**
-                *   **Câu hỏi:** ${q.question}
-                *   **Các lựa chọn:**
-                    *   A) ${getOptionText(q.options[0])}
-                    *   B) ${getOptionText(q.options[1])}
-                    *   C) ${getOptionText(q.options[2])}
-                    *   D) ${getOptionText(q.options[3])}
-                *   **Đáp án đúng:** ${correctAnswerLetter} (${correctOptionText})
-
-                **Yêu cầu:** Hãy giải thích câu trả lời cho câu hỏi trên.
-            `;
-        }
-    } else {
-        // Trường hợp 2: Người dùng hỏi một câu hỏi chung
-        finalPrompt = `
-            **System Instructions:**
-            1.  **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện và chuyên nghiệp, luôn trả lời bằng tiếng Việt.
-            
-            2.  **Core Task (Nhiệm vụ chính với 2 mức ưu tiên):**
-                -   **ƯU TIÊN 1 (Tìm trong tài liệu):** Đầu tiên, hãy tìm câu trả lời cho câu hỏi của người dùng bên trong "KHỐI KIẾN THỨC" được cung cấp dưới đây. Nếu tìm thấy thông tin phù hợp, hãy trả lời dựa hoàn toàn vào đó.
-                -   **ƯU TIÊN 2 (Sử dụng kiến thức chung):** Nếu và chỉ nếu bạn không thể tìm thấy câu trả lời trong "KHỐI KIẾN THỨC", bạn được phép sử dụng kiến thức chung của mình như một AI để trả lời câu hỏi. Khi đó, hãy trả lời một cách hữu ích và thân thiện.
-            
-            3.  **Formatting:** Luôn sử dụng markdown để câu trả lời được rõ ràng.
-
-            --- BẮT ĐẦU KHỐI KIẾN THỨC ---
-
-            ${pdfContent} 
-
-            --- KẾT THÚC KHỐI KIẾN THỨC ---
-
-            **Current User Context:**
-            -   Đang ở màn hình: ${websiteContext.screen}
-            -   Đang làm bài thi: ${websiteContext.quizTitle}
-            -   Tiến độ: ${websiteContext.progress}
-
-            **User's Question:** "${userMessage}"
-
-            Hãy dựa vào các quy tắc và kiến thức trên để trả lời câu hỏi của người dùng.
+        let thinkingClass = isThinking ? 'thinking-indicator' : '';
+        content = `
+            <div class="w-10 h-10 rounded-full bg-gray-200 flex-shrink-0 mr-3">
+                 <img src="./img/logo.png" alt="Bot Avatar" class="w-full h-full rounded-full object-cover">
+            </div>
+            <div class="bg-gray-200 rounded-lg py-2 px-4 max-w-xs md:max-w-md lg:max-w-lg ${thinkingClass}">
+                <p class="text-gray-800">${text}</p>
+            </div>
         `;
     }
-    
-    chatHistory.push({ role: "user", parts: [{ text: finalPrompt }] });
 
-    // --- BƯỚC 3: GỌI API VÀ XỬ LÝ PHẢN HỒI (Không thay đổi) ---
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: chatHistory,
-                    generationConfig: { temperature: 0.6, topK: 40, topP: 0.95, maxOutputTokens: 1024 }
-                })
-            });
-            
-            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
-            const data = await response.json();
-            
-            if (data.candidates?.[0]?.content?.parts?.[0]) {
-                const botMessage = data.candidates[0].content.parts[0].text;
-                chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
-                
-                if (typingIndicator) typingIndicator.parentElement.remove();
-                appendMessage(botMessage, 'bot');
-                chatbotSendBtn.disabled = false;
-                return;
-            } else {
-                 throw new Error("Invalid response from API");
-            }
+    messageWrapper.innerHTML = content;
+    chatMessages.appendChild(messageWrapper);
+    chatbox.scrollTop = chatbox.scrollHeight; // Tự động cuộn xuống
+    return messageWrapper;
+}
 
-        } catch (error) {
-            console.error(`Attempt ${attempt} failed:`, error);
-            if (attempt === MAX_RETRIES) {
-                if (typingIndicator) typingIndicator.parentElement.remove();
-                appendMessage("Hmm, chưa kịp load hãy thử lại lần nữa nhé, hẹhẹ!😥", 'bot');
-            } else {
-                await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+// --- LOGIC TÌM KIẾM CÂU TRẢ LỜI (ĐÃ TỐI ƯU) ---
+function findAnswer(query) {
+    // Chuyển câu hỏi về chữ thường để dễ so sánh
+    const lowerCaseQuery = query.toLowerCase();
+
+    // 1. Tìm trong dữ liệu luật đã cấu trúc (structuredLegalData)
+    for (const law in structuredLegalData) {
+        for (const chapter in structuredLegalData[law]) {
+            for (const articleKey in structuredLegalData[law][chapter]) {
+                const articleData = structuredLegalData[law][chapter][articleKey];
+                // Lấy tên Điều để kiểm tra
+                const articleName = articleKey.toLowerCase();
+
+                if (articleName.includes(lowerCaseQuery)) {
+                     // Nếu articleData là một object (có các khoản)
+                    if (typeof articleData === 'object' && articleData !== null) {
+                        let fullArticleText = ``;
+                        for(const clauseKey in articleData) {
+                            fullArticleText += `<strong>Khoản ${clauseKey}:</strong> ${articleData[clauseKey]}<br/><br/>`;
+                        }
+                        return `<strong>${articleKey.split('.')[0]}:</strong><br/>${fullArticleText}`;
+                    }
+                    // Nếu là string (chỉ có nội dung chính)
+                    return `<strong>${articleKey.split('.')[0]}:</strong><br/>${articleData}`;
+                }
             }
         }
     }
-    
-    chatbotSendBtn.disabled = false;
+
+    // 2. Nếu không tìm thấy trong luật, trả về câu trả lời mặc định
+    return "Xin lỗi, tôi không tìm thấy thông tin bạn cần. Bạn có thể sao chép và dán toàn bộ câu hỏi trắc nghiệm vào đây để tôi hỗ trợ.";
 }
 
-// Các hàm còn lại không thay đổi
-function setupDraggableChatbot() {
-    let isDragging = false;
-    let offsetX, offsetY;
 
-    chatbotHeader.addEventListener('mousedown', (e) => {
-        isDragging = true;
-        offsetX = e.clientX - chatbotContainer.offsetLeft;
-        offsetY = e.clientY - chatbotContainer.offsetTop;
-        chatbotContainer.style.transition = 'none';
-
-        function onMouseMove(e) {
-            if (!isDragging) return;
-            chatbotContainer.style.left = (e.clientX - offsetX) + 'px';
-            chatbotContainer.style.top = (e.clientY - offsetY) + 'px';
-        }
-
-        function onMouseUp() {
-            isDragging = false;
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-            chatbotContainer.style.transition = '';
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    });
-}
-
-function setupResizableChatbot() {
-    resizeHandle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        chatbotContainer.style.transition = 'none';
-        const minWidth = 300, minHeight = 400;
-        const startWidth = chatbotContainer.offsetWidth;
-        const startHeight = chatbotContainer.offsetHeight;
-        const startX = e.clientX;
-        const startY = e.clientY;
-
-        function onMouseMove(e) {
-            const width = Math.max(minWidth, startWidth + (e.clientX - startX));
-            const height = Math.max(minHeight, startHeight + (e.clientY - startY));
-            chatbotContainer.style.width = `${width}px`;
-            chatbotContainer.style.height = `${height}px`;
-        }
-
-        function onMouseUp() {
-            chatbotContainer.style.transition = '';
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
-
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
-    });
-}
-
+// --- KHỞI TẠO EVENT LISTENERS ---
 export function initChatbot() {
-    ui.chatbotToggleBtn.addEventListener('click', toggleChatbot);
-    chatbotCloseBtn.addEventListener('click', toggleChatbot);
-
-    chatbotForm.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const message = chatbotInput.value.trim();
-        if (message) {
-            appendMessage(message, 'user');
-            getGeminiResponse(message);
-            chatbotInput.value = '';
+    sendBtn.addEventListener('click', sendMessage);
+    chatInput.addEventListener('keyup', (event) => {
+        if (event.key === 'Enter') {
+            sendMessage();
         }
     });
 
-    setupDraggableChatbot();
-    setupResizableChatbot();
+    chatbotToggle.addEventListener('click', () => {
+        const isHidden = chatbotContainer.classList.contains('hidden');
+        if (isHidden) {
+            chatbotContainer.classList.remove('hidden');
+            setTimeout(() => {
+                chatbotContainer.classList.remove('opacity-0');
+                chatbotContainer.classList.add('opacity-100');
+            }, 10);
+        } else {
+            chatbotContainer.classList.remove('opacity-100');
+            chatbotContainer.classList.add('opacity-0');
+            setTimeout(() => {
+                chatbotContainer.classList.add('hidden');
+            }, 300);
+        }
+    });
 }
