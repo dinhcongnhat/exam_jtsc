@@ -22,13 +22,14 @@ async function processPdfs() {
                 const data = await pdf(dataBuffer);
 
                 // Thêm nội dung text vào biến tổng hợp
-                allPdfText += `\n\n--- NỘI DUNG TỪ FILE: ${file} ---\n\n` + data.text;
+                allPdfText += `\\n\\n--- NỘI DUNG TỪ FILE: ${file} ---\\n\\n` + data.text;
             }
         }
 
         // Ghi toàn bộ nội dung đã trích xuất ra file js
-        // Sử dụng JSON.stringify để escape các ký tự đặc biệt như dấu nháy, xuống dòng
-        const fileContent = `export const pdfContent = ${JSON.stringify(allPdfText)};`;
+        // Sử dụng template literal (dấu `) để giữ lại định dạng và xuống dòng.
+        // Escape các dấu ` có sẵn trong text để không làm hỏng cú pháp.
+        const fileContent = `export const pdfContent = \`\n${allPdfText.replace(/`/g, '\\\\`')}\`;`;
         fs.writeFileSync(outputFilePath, fileContent);
 
         console.log(`✅ Xử lý thành công! Toàn bộ nội dung đã được lưu vào file: ${outputFilePath}`);
