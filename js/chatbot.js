@@ -41,10 +41,9 @@ function appendMessage(message, sender) {
             messageElement.innerHTML = `<div class="flex items-center justify-center space-x-1"><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.3s]"></div><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce [animation-delay:-0.15s]"></div><div class="h-2 w-2 bg-gray-400 rounded-full animate-bounce"></div></div>`;
             messageElement.id = 'typing-indicator';
         } else {
-            // Cải tiến để render markdown tốt hơn
             let formattedMessage = message
-                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>') // In đậm
-                .replace(/\n/g, '<br>'); // Xuống dòng
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
             messageElement.innerHTML = formattedMessage;
         }
     }
@@ -54,9 +53,8 @@ function appendMessage(message, sender) {
     chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 }
 
-// *** HÀM getGeminiResponse ĐƯỢC NÂNG CẤP VỚI NGỮ CẢNH VÀ PERSONA ***
 async function getGeminiResponse(userMessage) {
-    const GEMINI_API_KEY = "AIzaSyDZYwgPgnm-6ZZ4ZqtB-zKb9GmRtLC_Ivs"; 
+    const GEMINI_API_KEY = "AIzaSyDZYwgPgnm-6ZZ4ZqtB-zKb9GmRtLC_Ivs";
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_API_KEY}`;
     
     const MAX_RETRIES = 3;
@@ -66,7 +64,6 @@ async function getGeminiResponse(userMessage) {
     appendMessage('typing...', 'bot');
     let typingIndicator = document.getElementById('typing-indicator');
 
-    // --- BƯỚC 1: XÁC ĐỊNH NGỮ CẢNH HIỆN TẠI CỦA NGƯỜI DÙNG ---
     const getCurrentScreen = () => {
         for (const screenName in ui.screens) {
             if (!ui.screens[screenName].classList.contains('hidden')) {
@@ -83,95 +80,135 @@ async function getGeminiResponse(userMessage) {
         progress: currentQuizId ? `Đã trả lời ${Object.keys(userAnswers).length}/${currentQuestions.length} câu` : 'Không áp dụng'
     };
 
-    // --- BƯỚC 2: XÂY DỰNG PROMPT THÔNG MINH DỰA TRÊN NGỮ CẢNH ---
-    let finalPrompt = '';
-    const questionMatch = userMessage.toLowerCase().match(/(?:câu|question|q|c[aâ]u)\s*(?:hỏi|số)?\s*(\d+)/i);
+    let questionInfo = null;
     const getOptionText = (option) => option.text || option;
 
-    if (questionMatch && websiteContext.quizActive) {
-        // Trường hợp 1: Người dùng hỏi về một câu hỏi cụ thể trong bài thi
-        const questionNum = parseInt(questionMatch[1]) - 1;
+    if (websiteContext.quizActive) {
         const quiz = allQuizzes[currentQuizId];
+        const questionMatchByNumber = userMessage.toLowerCase().match(/(?:câu|question|q|c[aâ]u)\s*(?:hỏi|số)?\s*(\d+)/i);
+        let questionNum = -1;
+
+        if (questionMatchByNumber) {
+            questionNum = parseInt(questionMatchByNumber[1]) - 1;
+        } else {
+            const trimmedUserMessage = userMessage.trim().toLowerCase();
+            questionNum = quiz.questions.findIndex(q => q.question.trim().toLowerCase() === trimmedUserMessage);
+        }
 
         if (questionNum >= 0 && questionNum < quiz.questions.length) {
             const q = quiz.questions[questionNum];
-            const correctAnswerLetter = String.fromCharCode(65 + q.correctAnswer);
-            const correctOptionText = getOptionText(q.options[q.correctAnswer]);
-
-            const optionsStringForDisplay = q.options.map((opt, index) => {
-                const label = String.fromCharCode(65 + index);
-                return `${label}) ${getOptionText(opt)}`;
-            }).join('\n');
-
-            const responseMessage = `📝 **Câu hỏi ${questionNum + 1}**\n━━━━━━━━━━━━━━━━━━━━━━\n${q.question}\n\n**Các phương án trả lời:**\n${optionsStringForDisplay}\n\n✅ **Đáp án chính xác:** ${correctAnswerLetter}`;
-            
-            if (typingIndicator) typingIndicator.parentElement.remove();
-            appendMessage(responseMessage, 'bot');
-            appendMessage('typing...', 'bot');
-            typingIndicator = document.getElementById('typing-indicator');
-
-            finalPrompt = `
-                **System Instructions:**
-                1.  **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện, chuyên nghiệp, và luôn trả lời bằng tiếng Việt.
-                2.  **Core Task:** Nhiệm vụ của bạn là giải thích một câu hỏi trắc nghiệm. Hãy dựa vào "KHỐI KIẾN THỨC" được cung cấp dưới đây để tìm ra lý do tại sao đáp án đúng lại chính xác và các đáp án khác lại sai.
-                3.  **Formatting:** Sử dụng markdown (in đậm, gạch đầu dòng) để trình bày câu trả lời một cách rõ ràng, dễ hiểu. Bắt đầu bằng việc xác nhận đáp án đúng, sau đó giải thích chi tiết.
-
-                --- BẮT ĐẦU KHỐI KIẾN THỨC ---
-                ${pdfContent}
-                --- KẾT THÚC KHỐI KIẾN THỨC ---
-
-                **Câu hỏi cần giải thích:**
-                *   **Câu hỏi:** ${q.question}
-                *   **Các lựa chọn:**
-                    *   A) ${getOptionText(q.options[0])}
-                    *   B) ${getOptionText(q.options[1])}
-                    *   C) ${getOptionText(q.options[2])}
-                    *   D) ${getOptionText(q.options[3])}
-                *   **Đáp án đúng:** ${correctAnswerLetter} (${correctOptionText})
-
-                **Yêu cầu:** Hãy giải thích câu trả lời cho câu hỏi trên.
-            `;
+            questionInfo = {
+                question: q.question,
+                options: q.options,
+                correctAnswerIndex: q.correctAnswer,
+                questionNumber: questionNum + 1
+            };
         }
-    } else {
-        // Trường hợp 2: Người dùng hỏi một câu hỏi chung
-        finalPrompt = `
-            **System Instructions:**
-            1.  **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện và chuyên nghiệp, luôn trả lời bằng tiếng Việt.
-            
-            2.  **Core Task (Nhiệm vụ chính với 2 mức ưu tiên):**
-                -   **ƯU TIÊN 1 (Tìm trong tài liệu):** Đầu tiên, hãy tìm câu trả lời cho câu hỏi của người dùng bên trong "KHỐI KIẾN THỨC" được cung cấp dưới đây. Nếu tìm thấy thông tin phù hợp, hãy trả lời dựa hoàn toàn vào đó.
-                -   **ƯU TIÊN 2 (Sử dụng kiến thức chung):** Nếu và chỉ nếu bạn không thể tìm thấy câu trả lời trong "KHỐI KIẾN THỨC", bạn được phép sử dụng kiến thức chung của mình như một AI để trả lời câu hỏi. Khi đó, hãy trả lời một cách hữu ích và thân thiện.
-            
-            3.  **Formatting:** Luôn sử dụng markdown để câu trả lời được rõ ràng.
-
-            --- BẮT ĐẦU KHỐI KIẾN THỨC ---
-
-            ${pdfContent} 
-
-            --- KẾT THÚC KHỐI KIẾN THỨC ---
-
-            **Current User Context:**
-            -   Đang ở màn hình: ${websiteContext.screen}
-            -   Đang làm bài thi: ${websiteContext.quizTitle}
-            -   Tiến độ: ${websiteContext.progress}
-
-            **User's Question:** "${userMessage}"
-
-            Hãy dựa vào các quy tắc và kiến thức trên để trả lời câu hỏi của người dùng.
-        `;
     }
     
-    chatHistory.push({ role: "user", parts: [{ text: finalPrompt }] });
+    let requestBody;
+    chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
 
-    // --- BƯỚC 3: GỌI API VÀ XỬ LÝ PHẢN HỒI (Không thay đổi) ---
+    const isExternalQuestion = !questionInfo && userMessage.match(/A\)|B\)|C\)|D\)/i);
+
+    if (questionInfo) {
+        const { question, options, correctAnswerIndex, questionNumber } = questionInfo;
+        const correctAnswerLetter = String.fromCharCode(65 + correctAnswerIndex);
+        const correctOptionText = getOptionText(options[correctAnswerIndex]);
+
+        const optionsStringForDisplay = options.map((opt, index) => {
+            return `${String.fromCharCode(65 + index)}) ${getOptionText(opt)}`;
+        }).join('\n');
+
+        const responseMessage = `📝 **Câu hỏi ${questionNumber}**\n━━━━━━━━━━━━━━━━━━━━━━\n${question}\n\n**Các phương án trả lời:**\n${optionsStringForDisplay}\n\n✅ **Đáp án chính xác:** ${correctAnswerLetter}`;
+        
+        if (typingIndicator) typingIndicator.parentElement.remove();
+        appendMessage(responseMessage, 'bot');
+        appendMessage('typing...', 'bot');
+        typingIndicator = document.getElementById('typing-indicator');
+
+        const explanationPrompt = `
+            **System Instructions:**
+            1. **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện, chuyên nghiệp, và luôn trả lời bằng tiếng Việt.
+            2. **Core Task:** Giải thích câu hỏi trắc nghiệm dựa vào "KHỐI KIẾN THỨC" dưới đây.
+            3. **Formatting:** Dùng markdown, bắt đầu bằng việc xác nhận đáp án đúng, sau đó giải thích chi tiết.
+
+            --- BẮT ĐẦU KHỐI KIẾN THỨC ---
+            ${pdfContent}
+            --- KẾT THÚC KHỐI KIẾN THỨC ---
+
+            **Câu hỏi cần giải thích:**
+            *   **Câu hỏi:** ${question}
+            *   **Các lựa chọn:** ${options.map((o, i) => `\n${String.fromCharCode(65 + i)}) ${getOptionText(o)}`).join('')}
+            *   **Đáp án đúng:** ${correctAnswerLetter} (${correctOptionText})
+
+            **Yêu cầu:** Hãy giải thích câu trả lời cho câu hỏi trên.
+        `;
+        
+        requestBody = {
+            contents: [{ role: "user", parts: [{ text: explanationPrompt }] }]
+        };
+
+    } else if (isExternalQuestion) {
+        if (typingIndicator) typingIndicator.parentElement.remove();
+        appendMessage('Đây là câu hỏi không thuộc tài liệu, mình sẽ trả lời dựa trên kiến thức chung nhé!', 'bot');
+        appendMessage('typing...', 'bot');
+        typingIndicator = document.getElementById('typing-indicator');
+
+        const externalQuestionPrompt = `
+            **System Instructions:**
+            1. **Persona:** Bạn là một trợ lý AI chuyên gia, trả lời bằng tiếng Việt.
+            2. **Core Task:** Bạn đã nhận được một câu hỏi trắc nghiệm không có trong tài liệu học tập được cung cấp. Nhiệm vụ của bạn là:
+                a. Phân tích câu hỏi và các lựa chọn.
+                b. Xác định câu trả lời đúng nhất dựa trên kiến thức chung của bạn.
+                c. Trình bày câu trả lời theo định dạng: "**Đáp án:** [A/B/C/D].\n\n**Giải thích:** [Giải thích lý do tại sao đáp án đó đúng và các đáp án khác sai]."
+            3. **Formatting:** Sử dụng markdown cho rõ ràng.
+
+            **Câu hỏi từ người dùng:**
+            "${userMessage}"
+
+            **Yêu cầu:** Hãy trả lời câu hỏi trên theo hướng dẫn.
+        `;
+
+        requestBody = {
+            contents: [{ role: "user", parts: [{ text: externalQuestionPrompt }] }]
+        };
+
+    } else {
+        requestBody = {
+            contents: chatHistory,
+            systemInstruction: {
+                parts: [{
+                    text: `
+                    **System Instructions:**
+                    1. **Persona:** Bạn là "Trợ lý Học tập của JTSC", một AI thân thiện, chuyên nghiệp, trả lời bằng tiếng Việt.
+                    2. **Core Task:**
+                       - **ƯU TIÊN 1:** Trả lời câu hỏi của người dùng dựa vào "KHỐI KIẾN THỨC" dưới đây.
+                       - **ƯU TIÊN 2:** Nếu không tìm thấy, hãy dùng kiến thức chung để trả lời.
+                    3. **Formatting:** Dùng markdown.
+
+                    --- BẮT ĐẦU KHỐI KIẾN THỨC ---
+                    ${pdfContent}
+                    --- KẾT THÚC KHỐI KIẾN THỨC ---
+
+                    **Current User Context:**
+                    - Đang ở màn hình: ${websiteContext.screen}
+                    - Đang làm bài thi: ${websiteContext.quizTitle}
+                    - Tiến độ: ${websiteContext.progress}
+                    `
+                }]
+            }
+        };
+    }
+
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
             const response = await fetch(API_URL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    contents: chatHistory,
-                    generationConfig: { temperature: 0.6, topK: 40, topP: 0.95, maxOutputTokens: 1024 }
+                    ...requestBody,
+                    generationConfig: { temperature: 0.2, topK: 40, topP: 0.95, maxOutputTokens: 1024 }
                 })
             });
             
@@ -181,7 +218,15 @@ async function getGeminiResponse(userMessage) {
             
             if (data.candidates?.[0]?.content?.parts?.[0]) {
                 const botMessage = data.candidates[0].content.parts[0].text;
-                chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
+                // Only add the actual bot response to history
+                if (!isExternalQuestion && !questionInfo) {
+                    chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
+                } else {
+                    // For special cases, we pop the user message and add both to keep history clean
+                    chatHistory.pop();
+                    chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
+                    chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
+                }
                 
                 if (typingIndicator) typingIndicator.parentElement.remove();
                 appendMessage(botMessage, 'bot');
@@ -195,7 +240,8 @@ async function getGeminiResponse(userMessage) {
             console.error(`Attempt ${attempt} failed:`, error);
             if (attempt === MAX_RETRIES) {
                 if (typingIndicator) typingIndicator.parentElement.remove();
-                appendMessage("Hmm, chưa kịp load hãy thử lại lần nữa nhé, hẹhẹ!😥", 'bot');
+                appendMessage("Hmm, có lỗi xảy ra, hãy thử lại sau nhé! 😥", 'bot');
+                chatHistory.pop();
             } else {
                 await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
             }
@@ -205,7 +251,7 @@ async function getGeminiResponse(userMessage) {
     chatbotSendBtn.disabled = false;
 }
 
-// Các hàm còn lại không thay đổi
+// Unchanged functions below...
 function setupDraggableChatbot() {
     let isDragging = false;
     let offsetX, offsetY;
