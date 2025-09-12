@@ -85,7 +85,7 @@ async function getGeminiResponse(userMessage) {
 
     // --- BƯỚC 2: XÂY DỰNG PROMPT THÔNG MINH DỰA TRÊN NGỮ CẢNH ---
     let finalPrompt = '';
-    const questionMatch = userMessage.toLowerCase().match(/(?:câu|question|q|c[aâ]u)\s*(\d+)/i);
+    const questionMatch = userMessage.toLowerCase().match(/(?:câu|question|q|c[aâ]u)\s*(?:hỏi|số)?\s*(\d+)/i);
     const getOptionText = (option) => option.text || option;
 
     if (questionMatch && websiteContext.quizActive) {
