@@ -132,18 +132,87 @@ body {
             animation: pulse-shadow 1.5 infinite;
         }
 
-/* Resize handles for all directions */
+/* Resize handles for edges and corners */
 .resize-handle {
     position: absolute;
-    opacity: 0;
-    background-color: transparent;
-    transition: none;
+    background: transparent;
     z-index: 1000;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    touch-action: none;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+/* Corners */
+.resize-handle-top-left,
+.resize-handle-top-right,
+.resize-handle-bottom-left,
+.resize-handle-bottom-right {
+    width: 10px;
+    height: 10px;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.resize-handle-top-left {
+    top: -5px;
+    left: -5px;
+    cursor: nwse-resize;
+}
+
+.resize-handle-top-right {
+    top: -5px;
+    right: -5px;
+    cursor: nesw-resize;
+}
+
+.resize-handle-bottom-left {
+    bottom: -5px;
+    left: -5px;
+    cursor: nesw-resize;
+}
+
+.resize-handle-bottom-right {
+    bottom: -5px;
+    right: -5px;
+    cursor: nwse-resize;
+}
+
+/* Edges */
+.resize-handle-top,
+.resize-handle-bottom {
+    height: 8px;
+    width: calc(100% - 16px); /* Leave space for corners */
+    left: 8px;
+}
+
+.resize-handle-top {
+    top: -5px;
+    cursor: ns-resize;
+}
+
+.resize-handle-bottom {
+    bottom: -5px;
+    cursor: ns-resize;
+}
+
+.resize-handle-left,
+.resize-handle-right {
+    width: 8px;
+    height: calc(100% - 16px); /* Leave space for corners */
+    top: 8px;
+}
+
+.resize-handle-left {
+    left: -5px;
+    cursor: ew-resize;
+}
+
+.resize-handle-right {
+    right: -5px;
+    cursor: ew-resize;
+}
+
+.resize-handle:hover {
+    opacity: 1;
 }
 
 @media (max-width: 768px) {

@@ -248,12 +248,15 @@
                 <button type="submit" id="chatbot-send-btn" class="bg-blue-700 text-white px-2 md:px-4 rounded-r-lg hover:bg-blue-800 disabled:bg-blue-400 text-sm md:text-base">Gửi</button>
             </div>
         </form>
-        <!-- Resize handles (hidden) -->
+        <!-- Resize handles for all 8 corners -->
         <div class="resize-handle resize-handle-top-left" data-direction="top-left"></div>
         <div class="resize-handle resize-handle-top-right" data-direction="top-right"></div>
         <div class="resize-handle resize-handle-bottom-left" data-direction="bottom-left"></div>
-        <!-- Resize grip (visible) -->
-        <div id="resize-grip" class="resize-grip">↔</div>
+        <div class="resize-handle resize-handle-bottom-right" data-direction="bottom-right"></div>
+        <div class="resize-handle resize-handle-top" data-direction="top"></div>
+        <div class="resize-handle resize-handle-bottom" data-direction="bottom"></div>
+        <div class="resize-handle resize-handle-left" data-direction="left"></div>
+        <div class="resize-handle resize-handle-right" data-direction="right"></div>
     </div>
         <script type="module" src="js/main.js"></script>
 </body>
