@@ -86,16 +86,21 @@ body {
 
 /* Resize handles for all directions */
 .resize-handle {
-    position: absolute !important;
-    opacity: 0 !important;
-    background: transparent !important;
-    z-index: 9999 !important;
-    pointer-events: auto !important;
+    position: absolute;
+    opacity: 0;
+    background-color: transparent;
+    transition: none;
+    z-index: 1000;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    touch-action: none;
 }
 
 .resize-handle:hover {
-    opacity: 0 !important;
-    background: transparent !important;
+    opacity: 0;
+    background-color: transparent;
 }
 
 /* Top resize handle */

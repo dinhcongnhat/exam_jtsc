@@ -1,4 +1,4 @@
-// js/chatbot.js
+// js/chatbot-hosting-fix.js - Ultra compatible version for cPanel
 import { pdfContent } from './pdf-content.js';
 import { allQuizzes } from './quiz-data.js';
 import { currentQuizId, currentQuestions, userAnswers } from './quiz.js';
@@ -11,16 +11,207 @@ const chatbotForm = document.getElementById('chatbot-form');
 const chatbotInput = document.getElementById('chatbot-input');
 const chatbotSendBtn = document.getElementById('chatbot-send-btn');
 const chatbotMessages = document.getElementById('chatbot-messages');
-const resizeHandles = document.querySelectorAll('.resize-handle');
 
 let chatHistory = [];
-let currentLanguage = 'vi'; // Ngôn ngữ mặc định
-let welcomeMessageShown = false; // Flag để theo dõi đã hiển thị thông báo chào mừng chưa
+let currentLanguage = 'vi';
+let welcomeMessageShown = false;
 
-// Hàm chuyển đổi ngôn ngữ
+// ULTRA SIMPLE RESIZE - NO FANCY FEATURES
+function setupUltraSimpleResize() {
+    console.log('🔧 Setting up ULTRA SIMPLE resize...');
+    
+    if (!chatbotContainer) {
+        console.error('❌ Chatbot container not found!');
+        return;
+    }
+
+    // Global resize state - simplest possible
+    let isResizing = false;
+    let resizeDirection = '';
+    let startMouseX = 0;
+    let startMouseY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
+    let startLeft = 0;
+    let startTop = 0;
+
+    // Find all resize handles
+    const handles = chatbotContainer.querySelectorAll('.resize-handle');
+    console.log('📍 Found resize handles:', handles.length);
+
+    if (handles.length === 0) {
+        console.warn('⚠️ No resize handles found!');
+        return;
+    }
+
+    // Setup each handle with the most basic approach
+    for (let i = 0; i < handles.length; i++) {
+        const handle = handles[i];
+        const direction = handle.getAttribute('data-direction');
+        
+        if (!direction) continue;
+        
+        console.log('🎯 Setting up handle:', direction);
+
+        // Mouse events - ultra basic
+        handle.addEventListener('mousedown', function(e) {
+            console.log('🖱️ Mouse down on:', direction);
+            startResize(e.clientX, e.clientY, direction);
+            e.preventDefault();
+        }, false);
+
+        // Touch events - ultra basic
+        handle.addEventListener('touchstart', function(e) {
+            console.log('👆 Touch start on:', direction);
+            if (e.touches && e.touches.length > 0) {
+                startResize(e.touches[0].clientX, e.touches[0].clientY, direction);
+                e.preventDefault();
+            }
+        }, false);
+    }
+
+    // Global mouse/touch handlers
+    document.addEventListener('mousemove', function(e) {
+        if (isResizing) {
+            doResize(e.clientX, e.clientY);
+        }
+    }, false);
+
+    document.addEventListener('mouseup', function(e) {
+        if (isResizing) {
+            stopResize();
+        }
+    }, false);
+
+    document.addEventListener('touchmove', function(e) {
+        if (isResizing && e.touches && e.touches.length > 0) {
+            doResize(e.touches[0].clientX, e.touches[0].clientY);
+            e.preventDefault();
+        }
+    }, false);
+
+    document.addEventListener('touchend', function(e) {
+        if (isResizing) {
+            stopResize();
+        }
+    }, false);
+
+    function startResize(clientX, clientY, direction) {
+        console.log('🚀 Starting resize:', direction, 'at', clientX, clientY);
+        
+        isResizing = true;
+        resizeDirection = direction;
+        startMouseX = clientX;
+        startMouseY = clientY;
+
+        const rect = chatbotContainer.getBoundingClientRect();
+        startWidth = rect.width;
+        startHeight = rect.height;
+        startLeft = rect.left;
+        startTop = rect.top;
+
+        // Disable selection and transitions
+        chatbotContainer.style.transition = 'none';
+        document.body.style.userSelect = 'none';
+        
+        console.log('📏 Start size:', Math.round(startWidth) + 'x' + Math.round(startHeight));
+    }
+
+    function doResize(clientX, clientY) {
+        if (!isResizing) return;
+
+        const deltaX = clientX - startMouseX;
+        const deltaY = clientY - startMouseY;
+
+        const minW = 280;
+        const minH = 350;
+        const maxW = window.innerWidth - 50;
+        const maxH = window.innerHeight - 50;
+
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        // Ultra simple resize logic
+        switch(resizeDirection) {
+            case 'right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                break;
+            case 'left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                if (newWidth !== startWidth) {
+                    newLeft = startLeft + (startWidth - newWidth);
+                }
+                break;
+            case 'bottom':
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                break;
+            case 'top':
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                if (newHeight !== startHeight) {
+                    newTop = startTop + (startHeight - newHeight);
+                }
+                break;
+            case 'bottom-right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                break;
+            case 'bottom-left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                if (newWidth !== startWidth) {
+                    newLeft = startLeft + (startWidth - newWidth);
+                }
+                break;
+            case 'top-right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                if (newHeight !== startHeight) {
+                    newTop = startTop + (startHeight - newHeight);
+                }
+                break;
+            case 'top-left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                if (newWidth !== startWidth) {
+                    newLeft = startLeft + (startWidth - newWidth);
+                }
+                if (newHeight !== startHeight) {
+                    newTop = startTop + (startHeight - newHeight);
+                }
+                break;
+        }
+
+        // Apply new dimensions
+        chatbotContainer.style.width = newWidth + 'px';
+        chatbotContainer.style.height = newHeight + 'px';
+        chatbotContainer.style.left = newLeft + 'px';
+        chatbotContainer.style.top = newTop + 'px';
+        chatbotContainer.style.right = 'auto';
+        chatbotContainer.style.bottom = 'auto';
+    }
+
+    function stopResize() {
+        console.log('🛑 Stopping resize');
+        
+        isResizing = false;
+        resizeDirection = '';
+        
+        // Restore styles
+        chatbotContainer.style.transition = '';
+        document.body.style.userSelect = '';
+        
+        const rect = chatbotContainer.getBoundingClientRect();
+        console.log('🏁 Final size:', Math.round(rect.width) + 'x' + Math.round(rect.height));
+    }
+
+    console.log('✅ Ultra simple resize setup completed!');
+}
+
+// [Keep all other functions exactly the same as original chatbot.js]
 function switchLanguage(lang) {
     currentLanguage = lang;
-    // Hiển thị thông báo chuyển đổi ngôn ngữ
     const langNames = {
         vi: 'Tiếng Việt',
         en: 'English',
@@ -42,7 +233,6 @@ function toggleChatbot() {
         chatbotContainer.classList.toggle('open');
     }, 10);
 
-    // Hiển thị thông báo chào mừng bằng ngôn ngữ hiện tại (chỉ một lần)
     if (!chatbotContainer.classList.contains('hidden') && !welcomeMessageShown) {
         setTimeout(() => {
             const welcomeMessages = {
@@ -52,7 +242,7 @@ function toggleChatbot() {
                 ko: "JTSC에서 인사드립니다! 시험 중에 어려움이 있으면 언제든 물어보세요!"
             };
             appendMessage(welcomeMessages[currentLanguage], 'bot');
-            welcomeMessageShown = true; // Đánh dấu đã hiển thị
+            welcomeMessageShown = true;
         }, 500);
     }
 };
@@ -88,11 +278,10 @@ function appendMessage(message, sender) {
     chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 }
 
-// Hàm tìm kiếm nội dung liên quan cải tiến
+// [Keep all other functions from original chatbot.js - searchRelevantContent, detectLanguage, etc.]
 function searchRelevantContent(query, content) {
     if (!content || !query) return '';
     
-    // Kiểm tra nếu câu hỏi chắc chắn không liên quan đến nội dung pháp luật/đấu thầu
     const nonLegalTopics = [
         'toeic', 'ielts', 'english', 'học tập', 'giáo dục', 'khoa học', 'toán học', 'vật lý', 'hóa học',
         'lịch sử', 'địa lý', 'văn học', 'âm nhạc', 'thể thao', 'du lịch', 'ẩm thực', 'sức khỏe',
@@ -103,7 +292,6 @@ function searchRelevantContent(query, content) {
     const queryNormalized = query.toLowerCase()
         .replace(/[^\w\sàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệđìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/g, ' ');
     
-    // Nếu câu hỏi chứa các chủ đề không liên quan, trả về rỗng
     if (nonLegalTopics.some(topic => queryNormalized.includes(topic))) {
         return '';
     }
@@ -112,25 +300,22 @@ function searchRelevantContent(query, content) {
     const relevantSections = [];
     const keywords = queryNormalized
         .split(/\s+/)
-        .filter(word => word.length > 2); // Chỉ lấy từ có độ dài > 2
+        .filter(word => word.length > 2);
 
     for (const section of sections) {
         const sectionLower = section.toLowerCase();
         let relevanceScore = 0;
         
-        // Tính điểm liên quan
         for (const keyword of keywords) {
             const occurrences = (sectionLower.match(new RegExp(keyword, 'g')) || []).length;
             relevanceScore += occurrences;
         }
         
-        // Nếu có điểm liên quan, thêm vào danh sách
         if (relevanceScore > 0) {
             relevantSections.push({ section, score: relevanceScore });
         }
     }
 
-    // Sắp xếp theo điểm số và lấy top 5
     return relevantSections
         .sort((a, b) => b.score - a.score)
         .slice(0, 5)
@@ -138,42 +323,34 @@ function searchRelevantContent(query, content) {
         .join('\n\n');
 }
 
-// Hàm phát hiện ngôn ngữ của người dùng (ưu tiên ngôn ngữ đã chọn)
 function detectLanguage(text) {
-    // Nếu người dùng đã chọn ngôn ngữ cụ thể, ưu tiên sử dụng
     if (currentLanguage !== 'vi') {
         return currentLanguage;
     }
 
-    // Kiểm tra ký tự tiếng Việt
     const vietnameseChars = /[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệđìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/i;
     if (vietnameseChars.test(text)) {
         return 'vi';
     }
 
-    // Kiểm tra từ khóa tiếng Anh phổ biến
     const englishWords = /\b(the|and|or|but|in|on|at|to|for|of|with|by|an|a|is|are|was|were|be|been|being|have|has|had|do|does|did|will|would|can|could|should|may|might|must|shall)\b/i;
     if (englishWords.test(text)) {
         return 'en';
     }
 
-    // Kiểm tra ký tự Trung Quốc
     const chineseChars = /[\u4e00-\u9fff]/;
     if (chineseChars.test(text)) {
         return 'zh';
     }
 
-    // Kiểm tra ký tự Hàn Quốc
     const koreanChars = /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/;
     if (koreanChars.test(text)) {
         return 'ko';
     }
 
-    // Mặc định là tiếng Việt (đối với nội dung tiếng Việt)
     return 'vi';
 }
 
-// Hàm tạo prompt cho câu hỏi chung (dựa vào kiến thức tổng quát)
 function createGeneralKnowledgePrompt(language, userMessage, websiteContext) {
     const prompts = {
         vi: {
@@ -246,7 +423,6 @@ function createGeneralKnowledgePrompt(language, userMessage, websiteContext) {
     `;
 }
 
-// Hàm tạo prompt theo ngôn ngữ
 function createMultilingualPrompt(language, relevantContent, userMessage, websiteContext, isExplanation = false, questionInfo = null) {
     const prompts = {
         vi: {
@@ -374,7 +550,6 @@ async function getGeminiResponse(userMessage) {
     appendMessage('typing...', 'bot');
     let typingIndicator = document.getElementById('typing-indicator');
 
-    // Phát hiện ngôn ngữ của người dùng
     const userLanguage = detectLanguage(userMessage);
 
     const getCurrentScreen = () => {
@@ -422,15 +597,11 @@ async function getGeminiResponse(userMessage) {
     let requestBody;
     chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
 
-    // Tìm kiếm nội dung liên quan trước
     const relevantContent = searchRelevantContent(userMessage, pdfContent);
-    const hasRelevantContent = relevantContent && relevantContent.trim().length > 50; // Tăng threshold để tránh kết quả nhiễu
+    const hasRelevantContent = relevantContent && relevantContent.trim().length > 50;
     
-    // Kiểm tra xem có phải câu hỏi trắc nghiệm external không
     const isExternalMultipleChoice = !questionInfo && userMessage.match(/A\)|B\)|C\)|D\)/i);
     
-    // Kiểm tra xem có phải câu hỏi chung cần AI suy nghĩ không  
-    // Force general question mode cho các chủ đề chắc chắn không liên quan
     const forceGeneralTopics = [
         'toeic', 'ielts', 'tạo câu hỏi', 'tạo 10 câu', 'viết bài', 'cho tôi', 'hãy tạo',
         'lịch sử việt nam', 'khoa học', 'toán học', 'giáo dục', 'học tập', 'ai là gì',
@@ -441,10 +612,8 @@ async function getGeminiResponse(userMessage) {
         userMessage.toLowerCase().includes(topic)
     );
     
-    // Bao gồm các trường hợp: không có thông tin liên quan, hoặc thông tin quá ít, hoặc force general
     const isGeneralQuestion = !questionInfo && (!hasRelevantContent || shouldForceGeneral);
 
-    // Debug log
     console.log('Chat Debug:', {
         userMessage,
         questionInfo: !!questionInfo,
@@ -471,10 +640,8 @@ async function getGeminiResponse(userMessage) {
         appendMessage('typing...', 'bot');
         typingIndicator = document.getElementById('typing-indicator');
 
-        // Tìm kiếm nội dung liên quan
         const relevantContent = searchRelevantContent(question, pdfContent);
 
-        // Tạo prompt đa ngôn ngữ cho giải thích
         const questionInfoForPrompt = {
             question,
             options: options.map(getOptionText),
@@ -490,8 +657,6 @@ async function getGeminiResponse(userMessage) {
         };
 
     } else if (isExternalMultipleChoice) {
-        // Trả lời trực tiếp câu hỏi trắc nghiệm external mà không cần thông báo
-
         const externalQuestionPrompt = `
             **System Instructions:**
             
@@ -514,8 +679,6 @@ async function getGeminiResponse(userMessage) {
         };
 
     } else if (isGeneralQuestion) {
-        // Câu hỏi chung cần AI suy nghĩ - trả lời trực tiếp không cần thông báo
-
         const generalQuestionPrompt = createGeneralKnowledgePrompt(userLanguage, userMessage, websiteContext);
         
         requestBody = {
@@ -523,8 +686,6 @@ async function getGeminiResponse(userMessage) {
         };
 
     } else {
-        // Có nội dung liên quan trong tài liệu
-        // Tạo prompt đa ngôn ngữ
         const systemPrompt = createMultilingualPrompt(userLanguage, relevantContent, userMessage, websiteContext);
 
         requestBody = {
@@ -535,7 +696,6 @@ async function getGeminiResponse(userMessage) {
         };
     }
 
-    // Thực hiện API call
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
             const response = await fetch(API_URL, {
@@ -554,14 +714,10 @@ async function getGeminiResponse(userMessage) {
             if (data.candidates?.[0]?.content?.parts?.[0]) {
                 const botMessage = data.candidates[0].content.parts[0].text;
                 
-                // Quản lý chat history
                 if (!isExternalMultipleChoice && !questionInfo && !isGeneralQuestion) {
-                    // Câu hỏi thường có trong tài liệu - thêm vào history
                     chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
                 } else {
-                    // Câu hỏi đặc biệt (external questions, general questions) - không thêm vào history để tránh nhiễu
-                    chatHistory.pop(); // Xóa câu hỏi user vừa thêm
-                    // Không thêm vào history để giữ context sạch
+                    chatHistory.pop();
                 }
 
                 if (typingIndicator) typingIndicator.parentElement.remove();
@@ -615,224 +771,14 @@ function setupDraggableChatbot() {
     });
 }
 
-function setupResizableChatbot() {
-    console.log('🔄 Setting up resize (cPanel compatible)...');
-    
-    // Đảm bảo chatbot container tồn tại
-    var container = document.getElementById('chatbot-container');
-    if (!container) {
-        console.error('❌ Chatbot container not found!');
-        return;
-    }
-    
-    console.log('✅ Chatbot container found');
-    
-    // Biến global đơn giản
-    var isResizing = false;
-    var currentDirection = '';
-    var startMouseX = 0, startMouseY = 0;
-    var startWidth = 0, startHeight = 0;
-    var startLeft = 0, startTop = 0;
-
-    // Tìm tất cả resize handles
-    var handles = container.querySelectorAll('.resize-handle');
-    console.log('📍 Found', handles.length, 'resize handles');
-    
-    if (handles.length === 0) {
-        console.warn('⚠️ No resize handles found!');
-        return;
-    }
-
-    // Setup từng handle một cách đơn giản
-    for (var i = 0; i < handles.length; i++) {
-        var handle = handles[i];
-        var direction = handle.getAttribute('data-direction');
-        
-        if (!direction) {
-            console.warn('⚠️ Handle missing data-direction:', handle.className);
-            continue;
-        }
-        
-        console.log('🎯 Setting up handle:', direction);
-        
-        // Sử dụng closure để capture direction
-        (function(dir, handleEl) {
-            // Mouse events
-            handleEl.onmousedown = function(e) {
-                console.log('🖱️ Mouse down on:', dir);
-                startResize(e.clientX, e.clientY, dir);
-                e.preventDefault();
-                return false;
-            };
-            
-            // Touch events
-            handleEl.ontouchstart = function(e) {
-                console.log('👆 Touch start on:', dir);
-                if (e.touches && e.touches.length > 0) {
-                    startResize(e.touches[0].clientX, e.touches[0].clientY, dir);
-                }
-                e.preventDefault();
-                return false;
-            };
-        })(direction, handle);
-    }
-
-    // Global event handlers - sử dụng property thay vì addEventListener
-    var originalMouseMove = document.onmousemove;
-    var originalMouseUp = document.onmouseup;
-    var originalTouchMove = document.ontouchmove;
-    var originalTouchEnd = document.ontouchend;
-
-    document.onmousemove = function(e) {
-        if (isResizing) {
-            doResize(e.clientX, e.clientY);
-        }
-        // Call original handler if exists
-        if (originalMouseMove) originalMouseMove.call(this, e);
-    };
-
-    document.onmouseup = function(e) {
-        if (isResizing) {
-            stopResize();
-        }
-        // Call original handler if exists
-        if (originalMouseUp) originalMouseUp.call(this, e);
-    };
-
-    document.ontouchmove = function(e) {
-        if (isResizing && e.touches && e.touches.length > 0) {
-            doResize(e.touches[0].clientX, e.touches[0].clientY);
-            e.preventDefault();
-        }
-        // Call original handler if exists
-        if (originalTouchMove) originalTouchMove.call(this, e);
-    };
-
-    document.ontouchend = function(e) {
-        if (isResizing) {
-            stopResize();
-        }
-        // Call original handler if exists
-        if (originalTouchEnd) originalTouchEnd.call(this, e);
-    };
-
-    function startResize(clientX, clientY, direction) {
-        console.log('🚀 Starting resize:', direction);
-        
-        isResizing = true;
-        currentDirection = direction;
-        startMouseX = clientX;
-        startMouseY = clientY;
-
-        var rect = container.getBoundingClientRect();
-        startWidth = rect.width;
-        startHeight = rect.height;
-        startLeft = rect.left;
-        startTop = rect.top;
-
-        // Disable transitions and text selection
-        container.style.transition = 'none';
-        document.body.style.userSelect = 'none';
-        document.body.style.webkitUserSelect = 'none';
-        document.body.style.mozUserSelect = 'none';
-        document.body.style.msUserSelect = 'none';
-        
-        console.log('📏 Start dimensions:', Math.round(startWidth) + 'x' + Math.round(startHeight));
-    }
-
-    function doResize(clientX, clientY) {
-        if (!isResizing) return;
-
-        var deltaX = clientX - startMouseX;
-        var deltaY = clientY - startMouseY;
-
-        var minW = 300, minH = 400;
-        var maxW = window.innerWidth * 0.9;
-        var maxH = window.innerHeight * 0.9;
-
-        var newWidth = startWidth;
-        var newHeight = startHeight;
-        var newLeft = startLeft;
-        var newTop = startTop;
-
-        // Simple resize logic
-        switch(currentDirection) {
-            case 'right':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
-                break;
-            case 'left':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
-                newLeft = startLeft + (startWidth - newWidth);
-                break;
-            case 'bottom':
-                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
-                break;
-            case 'top':
-                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
-                newTop = startTop + (startHeight - newHeight);
-                break;
-            case 'bottom-right':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
-                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
-                break;
-            case 'bottom-left':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
-                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
-                newLeft = startLeft + (startWidth - newWidth);
-                break;
-            case 'top-right':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
-                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
-                newTop = startTop + (startHeight - newHeight);
-                break;
-            case 'top-left':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
-                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
-                newLeft = startLeft + (startWidth - newWidth);
-                newTop = startTop + (startHeight - newHeight);
-                break;
-        }
-
-        // Apply styles
-        container.style.width = newWidth + 'px';
-        container.style.height = newHeight + 'px';
-        container.style.left = newLeft + 'px';
-        container.style.top = newTop + 'px';
-        container.style.right = 'auto';
-        container.style.bottom = 'auto';
-    }
-
-    function stopResize() {
-        console.log('🛑 Stopping resize');
-        
-        isResizing = false;
-        currentDirection = '';
-        
-        // Restore styles
-        container.style.transition = '';
-        document.body.style.userSelect = '';
-        document.body.style.webkitUserSelect = '';
-        document.body.style.mozUserSelect = '';
-        document.body.style.msUserSelect = '';
-        
-        var rect = container.getBoundingClientRect();
-        console.log('🏁 Final dimensions:', Math.round(rect.width) + 'x' + Math.round(rect.height));
-    }
-
-    console.log('🎉 Resize setup completed!');
-}
-
-// Hàm reset trạng thái chatbot
 function resetChatbot() {
     chatHistory = [];
     welcomeMessageShown = false;
     currentLanguage = 'vi';
-    // Xóa tất cả tin nhắn
     const messagesContainer = document.querySelector('#chatbot-messages .relative.z-10');
     if (messagesContainer) {
         messagesContainer.innerHTML = '';
     }
-    // Reset language selector
     const languageSelector = document.getElementById('language-selector');
     if (languageSelector) {
         languageSelector.value = 'vi';
@@ -840,12 +786,11 @@ function resetChatbot() {
 }
 
 export function initChatbot() {
-    console.log('Initializing chatbot...'); // Debug log
+    console.log('🔧 Initializing chatbot with hosting fix...');
     
     ui.chatbotToggleBtn.addEventListener('click', toggleChatbot);
     chatbotCloseBtn.addEventListener('click', toggleChatbot);
 
-    // Thêm event listener cho language selector
     const languageSelector = document.getElementById('language-selector');
     if (languageSelector) {
         languageSelector.value = currentLanguage;
@@ -866,12 +811,11 @@ export function initChatbot() {
 
     setupDraggableChatbot();
     
-    // Sử dụng phiên bản đơn giản hơn cho cPanel
+    // Use ultra simple resize setup with delay
     setTimeout(() => {
-        console.log('Setting up cPanel-compatible resize...');
-        setupResizableChatbot();
-    }, 500);
+        console.log('🔧 Setting up ultra simple resize for hosting...');
+        setupUltraSimpleResize();
+    }, 1000);
 }
 
-// Export hàm reset để sử dụng từ bên ngoài
 export { resetChatbot };
