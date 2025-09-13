@@ -19,7 +19,7 @@ function shuffle(array) {
   }
 }
 
-// Hàm tạo đề thi ngẫu nhiên (phiên bản an toàn hơn)
+// Hàm tạo đề thi ngẫu nhiên với shuffle đáp án an toàn
 function createRandomQuiz() {
     // Gom tất cả câu hỏi từ các đề 1, 2, 3
     const allSourceQuestions = [];
@@ -39,11 +39,83 @@ function createRandomQuiz() {
         return [];
     }
 
-    // Xáo trộn toàn bộ câu hỏi
-    const shuffledQuestions = [...allSourceQuestions].sort(() => Math.random() - 0.5);
+    // Tạo deep copy và shuffle câu hỏi
+    const shuffledQuestions = [...allSourceQuestions]
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 100)
+        .map(q => {
+            // Deep copy câu hỏi với proper object handling
+            const questionCopy = {
+                question: q.question,
+                options: q.options.map(opt => ({
+                    // Deep copy từng option object
+                    label: opt.label,
+                    text: opt.text
+                })),
+                correctAnswer: q.correctAnswer
+            };
+            
+            // Lưu đáp án đúng ban đầu để verification (so sánh theo text)
+            const originalCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
+            
+            // Tạo array với index để track vị trí
+            const optionsWithIndex = questionCopy.options.map((option, index) => ({
+                option: option,
+                originalIndex: index
+            }));
+            
+            // Shuffle options
+            shuffle(optionsWithIndex);
+            
+            // Cập nhật lại options với labels mới (A, B, C, D)
+            questionCopy.options = optionsWithIndex.map((item, newIndex) => ({
+                label: String.fromCharCode(65 + newIndex), // A, B, C, D
+                text: item.option.text
+            }));
+            
+            // Cập nhật correctAnswer
+            questionCopy.correctAnswer = optionsWithIndex.findIndex(item => 
+                item.originalIndex === q.correctAnswer
+            );
+            
+            // Verification: Kiểm tra đáp án sau shuffle vẫn đúng
+            const newCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
+            
+            // Enhanced debugging
+            console.group(`🔍 Shuffle Debug: ${q.question.substring(0, 40)}...`);
+            console.log('Original data:', {
+                question: q.question.substring(0, 50) + '...',
+                originalCorrectIndex: q.correctAnswer,
+                originalCorrectText: originalCorrectText,
+                allOriginalOptions: q.options.map((opt, idx) => `${idx}: ${opt.text}`)
+            });
+            
+            console.log('After shuffle:', {
+                newCorrectIndex: questionCopy.correctAnswer,
+                newCorrectText: newCorrectText,
+                allNewOptions: questionCopy.options.map((opt, idx) => `${opt.label}(${idx}): ${opt.text}`),
+                optionsWithIndex: optionsWithIndex.map(item => ({
+                    originalIndex: item.originalIndex,
+                    text: item.option.text.substring(0, 30) + '...'
+                }))
+            });
+            
+            if (originalCorrectText !== newCorrectText) {
+                console.error('❌ Shuffle error: Correct answer mismatch!', {
+                    originalText: originalCorrectText,
+                    newText: newCorrectText,
+                    originalIndex: q.correctAnswer,
+                    newIndex: questionCopy.correctAnswer
+                });
+            } else {
+                console.log('✅ Shuffle verification passed');
+            }
+            console.groupEnd();
+            
+            return questionCopy;
+        });
 
-    // Lấy tối đa 100 câu hỏi
-    return shuffledQuestions.slice(0, 100);
+    return shuffledQuestions;
 }
 
 
@@ -71,7 +143,15 @@ function startQuiz(quizId) {
         if (currentQuestions.length === 0) return; // Dừng lại nếu không tạo được đề
         quizDuration = 60 * 120; // 120 minutes
     } else {
-        currentQuestions = [...allQuizzes[quizId].questions]; // Create a copy
+        // Tạo deep copy để tránh modification gốc
+        currentQuestions = allQuizzes[quizId].questions.map(q => ({
+            question: q.question,
+            options: q.options.map(opt => ({
+                label: opt.label,
+                text: opt.text
+            })),
+            correctAnswer: q.correctAnswer
+        }));
         quizDuration = 60 * 100; // 100 minutes
     }
     
@@ -199,3 +279,72 @@ export function initQuiz() {
         ui.navArrowDown.classList.toggle('hidden');
     });
 }
+
+// Test function để kiểm tra shuffle hoạt động đúng với object structure
+function testShuffle() {
+    console.log('=== TESTING SHUFFLE FUNCTIONALITY ===');
+    
+    // Test case với cấu trúc object thực tế
+    const testQuestion = {
+        question: "Test question?",
+        options: [
+            { label: "A", text: "Wrong option A" },
+            { label: "B", text: "Wrong option B" },
+            { label: "C", text: "CORRECT option C" },
+            { label: "D", text: "Wrong option D" }
+        ],
+        correctAnswer: 2 // "CORRECT option C"
+    };
+    
+    console.log('Original:', {
+        question: testQuestion.question,
+        options: testQuestion.options,
+        correctAnswer: testQuestion.correctAnswer,
+        correctText: testQuestion.options[testQuestion.correctAnswer].text
+    });
+    
+    // Test shuffle 10 lần
+    for (let i = 0; i < 10; i++) {
+        const questionCopy = {
+            question: testQuestion.question,
+            options: testQuestion.options.map(opt => ({
+                label: opt.label,
+                text: opt.text
+            })),
+            correctAnswer: testQuestion.correctAnswer
+        };
+        
+        const originalCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
+        
+        const optionsWithIndex = questionCopy.options.map((option, index) => ({
+            option: option,
+            originalIndex: index
+        }));
+        
+        shuffle(optionsWithIndex);
+        
+        // Update with new labels A, B, C, D
+        questionCopy.options = optionsWithIndex.map((item, newIndex) => ({
+            label: String.fromCharCode(65 + newIndex),
+            text: item.option.text
+        }));
+        
+        questionCopy.correctAnswer = optionsWithIndex.findIndex(item => 
+            item.originalIndex === testQuestion.correctAnswer
+        );
+        
+        const newCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
+        
+        console.log(`Test ${i + 1}:`, {
+            shuffledOptions: questionCopy.options.map(opt => `${opt.label}: ${opt.text}`),
+            correctAnswer: questionCopy.correctAnswer,
+            correctText: newCorrectText,
+            isValid: originalCorrectText === newCorrectText
+        });
+    }
+    
+    console.log('=== END SHUFFLE TEST ===');
+}
+
+// Export test function để có thể gọi từ console
+window.testShuffle = testShuffle;
