@@ -90,6 +90,12 @@ body {
     opacity: 0;
     background-color: transparent;
     transition: none;
+    z-index: 1000;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    touch-action: none;
 }
 
 .resize-handle:hover {

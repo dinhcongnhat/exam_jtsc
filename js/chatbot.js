@@ -616,90 +616,125 @@ function setupDraggableChatbot() {
 }
 
 function setupResizableChatbot() {
-    resizeHandles.forEach(handle => {
-        handle.addEventListener('mousedown', (e) => {
-            e.preventDefault();
-            chatbotContainer.style.transition = 'none';
+    // Đảm bảo resize handles đã được load
+    setTimeout(() => {
+        const handles = document.querySelectorAll('.resize-handle');
+        console.log('Found resize handles:', handles.length); // Debug log
+        
+        handles.forEach(handle => {
+            // Hỗ trợ cả mouse và touch events
+            const startEvents = ['mousedown', 'touchstart'];
+            const moveEvents = ['mousemove', 'touchmove'];
+            const endEvents = ['mouseup', 'touchend'];
             
-            const minWidth = 300, minHeight = 400;
-            const maxWidth = window.innerWidth * 0.9;
-            const maxHeight = window.innerHeight * 0.9;
-            
-            const startWidth = chatbotContainer.offsetWidth;
-            const startHeight = chatbotContainer.offsetHeight;
-            const startX = e.clientX;
-            const startY = e.clientY;
-            const direction = handle.dataset.direction;
-            
-            // Get container position
-            const rect = chatbotContainer.getBoundingClientRect();
-            const startLeft = rect.left;
-            const startTop = rect.top;
+            startEvents.forEach(eventType => {
+                handle.addEventListener(eventType, (e) => {
+                    e.preventDefault();
+                    console.log('Resize started:', handle.dataset.direction); // Debug log
+                    
+                    chatbotContainer.style.transition = 'none';
+                    
+                    const minWidth = 300, minHeight = 400;
+                    const maxWidth = window.innerWidth * 0.9;
+                    const maxHeight = window.innerHeight * 0.9;
+                    
+                    const startWidth = chatbotContainer.offsetWidth;
+                    const startHeight = chatbotContainer.offsetHeight;
+                    
+                    // Lấy tọa độ từ mouse hoặc touch
+                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+                    
+                    const startX = clientX;
+                    const startY = clientY;
+                    const direction = handle.dataset.direction;
+                    
+                    // Get container position
+                    const rect = chatbotContainer.getBoundingClientRect();
+                    const startLeft = rect.left;
+                    const startTop = rect.top;
 
-            function onMouseMove(e) {
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-                
-                let newWidth = startWidth;
-                let newHeight = startHeight;
-                let newLeft = startLeft;
-                let newTop = startTop;
+                    function onMove(e) {
+                        const currentX = e.clientX || (e.touches && e.touches[0].clientX);
+                        const currentY = e.clientY || (e.touches && e.touches[0].clientY);
+                        
+                        const deltaX = currentX - startX;
+                        const deltaY = currentY - startY;
+                        
+                        let newWidth = startWidth;
+                        let newHeight = startHeight;
+                        let newLeft = startLeft;
+                        let newTop = startTop;
 
-                switch(direction) {
-                    case 'right':
-                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
-                        break;
-                    case 'left':
-                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
-                        newLeft = startLeft + (startWidth - newWidth);
-                        break;
-                    case 'bottom':
-                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
-                        break;
-                    case 'top':
-                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
-                        newTop = startTop + (startHeight - newHeight);
-                        break;
-                    case 'bottom-right':
-                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
-                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
-                        break;
-                    case 'bottom-left':
-                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
-                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
-                        newLeft = startLeft + (startWidth - newWidth);
-                        break;
-                    case 'top-right':
-                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
-                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
-                        newTop = startTop + (startHeight - newHeight);
-                        break;
-                    case 'top-left':
-                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
-                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
-                        newLeft = startLeft + (startWidth - newWidth);
-                        newTop = startTop + (startHeight - newHeight);
-                        break;
-                }
+                        switch(direction) {
+                            case 'right':
+                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+                                break;
+                            case 'left':
+                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
+                                newLeft = startLeft + (startWidth - newWidth);
+                                break;
+                            case 'bottom':
+                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+                                break;
+                            case 'top':
+                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
+                                newTop = startTop + (startHeight - newHeight);
+                                break;
+                            case 'bottom-right':
+                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+                                break;
+                            case 'bottom-left':
+                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
+                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+                                newLeft = startLeft + (startWidth - newWidth);
+                                break;
+                            case 'top-right':
+                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
+                                newTop = startTop + (startHeight - newHeight);
+                                break;
+                            case 'top-left':
+                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
+                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
+                                newLeft = startLeft + (startWidth - newWidth);
+                                newTop = startTop + (startHeight - newHeight);
+                                break;
+                        }
 
-                chatbotContainer.style.width = `${newWidth}px`;
-                chatbotContainer.style.height = `${newHeight}px`;
-                chatbotContainer.style.left = `${newLeft}px`;
-                chatbotContainer.style.top = `${newTop}px`;
-                chatbotContainer.style.right = 'auto';
-                chatbotContainer.style.bottom = 'auto';
-            }
+                        chatbotContainer.style.width = `${newWidth}px`;
+                        chatbotContainer.style.height = `${newHeight}px`;
+                        chatbotContainer.style.left = `${newLeft}px`;
+                        chatbotContainer.style.top = `${newTop}px`;
+                        chatbotContainer.style.right = 'auto';
+                        chatbotContainer.style.bottom = 'auto';
+                    }
 
-            function onMouseUp() {
-                chatbotContainer.style.transition = '';
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onMouseUp);
-            }
+                    function onEnd() {
+                        console.log('Resize ended'); // Debug log
+                        chatbotContainer.style.transition = '';
+                        
+                        // Remove all event listeners
+                        moveEvents.forEach(moveType => {
+                            document.removeEventListener(moveType, onMove);
+                        });
+                        endEvents.forEach(endType => {
+                            document.removeEventListener(endType, onEnd);
+                        });
+                    }
 
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
+                    // Add event listeners for move and end
+                    moveEvents.forEach(moveType => {
+                        document.addEventListener(moveType, onMove, { passive: false });
+                    });
+                    endEvents.forEach(endType => {
+                        document.addEventListener(endType, onEnd);
+                    });
+                }, { passive: false });
+            });
         });
-    });
+    }, 100); // Delay 100ms để đảm bảo DOM đã load
 }
 
 // Hàm reset trạng thái chatbot
@@ -720,6 +755,8 @@ function resetChatbot() {
 }
 
 export function initChatbot() {
+    console.log('Initializing chatbot...'); // Debug log
+    
     ui.chatbotToggleBtn.addEventListener('click', toggleChatbot);
     chatbotCloseBtn.addEventListener('click', toggleChatbot);
 
@@ -743,7 +780,16 @@ export function initChatbot() {
     });
 
     setupDraggableChatbot();
-    setupResizableChatbot();
+    
+    // Đảm bảo resize setup được gọi sau khi DOM hoàn toàn ready
+    if (document.readyState === 'complete') {
+        setupResizableChatbot();
+    } else {
+        window.addEventListener('load', () => {
+            console.log('Window loaded, setting up resize...'); // Debug log
+            setupResizableChatbot();
+        });
+    }
 }
 
 // Export hàm reset để sử dụng từ bên ngoài
