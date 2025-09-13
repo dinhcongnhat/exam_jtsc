@@ -84,94 +84,30 @@ body {
     max-height: 500px; /* Adjust if more space is needed */
 }
 
-/* Resize handles for all directions */
-.resize-handle {
+/* Resize grip */
+.resize-grip {
     position: absolute;
-    opacity: 0;
-    background-color: transparent;
-    transition: none;
-    z-index: 1000;
+    bottom: 0;
+    right: 0;
+    width: 20px;
+    height: 20px;
+    cursor: se-resize;
+    color: rgba(0, 0, 0, 0.5);
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     user-select: none;
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
     touch-action: none;
+    z-index: 1000;
 }
 
-.resize-handle:hover {
-    opacity: 0;
-    background-color: transparent;
-}
-
-/* Top resize handle */
-.resize-handle-top {
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 8px;
-    cursor: n-resize;
-    border-radius: 0 0 4px 4px;
-}
-
-/* Bottom resize handle */
-.resize-handle-bottom {
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 8px;
-    cursor: s-resize;
-    border-radius: 4px 4px 0 0;
-}
-
-/* Left resize handle */
-.resize-handle-left {
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 8px;
-    cursor: w-resize;
-    border-radius: 0 4px 4px 0;
-}
-
-/* Right resize handle */
-.resize-handle-right {
-    right: 0;
-    top: 0;
-    bottom: 0;
-    width: 8px;
-    cursor: e-resize;
-    border-radius: 4px 0 0 4px;
-}
-
-/* Corner resize handles */
-.resize-handle-corner {
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-}
-
-.resize-handle-top-left {
-    top: 0;
-    left: 0;
-    cursor: nw-resize;
-}
-
-.resize-handle-top-right {
-    top: 0;
-    right: 0;
-    cursor: ne-resize;
-}
-
-.resize-handle-bottom-left {
-    bottom: 0;
-    left: 0;
-    cursor: sw-resize;
-}
-
-.resize-handle-bottom-right {
-    bottom: 0;
-    right: 0;
-    cursor: se-resize;
+.resize-grip:hover {
+    color: rgba(0, 0, 0, 0.8);
+    background-color: rgba(0, 0, 0, 0.1);
 }
 
  @keyframes pulse-shadow {
@@ -195,6 +131,20 @@ body {
             /* Áp dụng animation, lặp lại vô hạn với thời gian 2.5 giây cho mỗi chu kỳ */
             animation: pulse-shadow 1.5 infinite;
         }
+
+/* Resize handles for all directions */
+.resize-handle {
+    position: absolute;
+    opacity: 0;
+    background-color: transparent;
+    transition: none;
+    z-index: 1000;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    touch-action: none;
+}
 
 @media (max-width: 768px) {
     #chatbot-container {

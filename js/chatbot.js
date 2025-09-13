@@ -16,199 +16,6 @@ let chatHistory = [];
 let currentLanguage = 'vi';
 let welcomeMessageShown = false;
 
-// ULTRA SIMPLE RESIZE - NO FANCY FEATURES
-function setupUltraSimpleResize() {
-    console.log('🔧 Setting up ULTRA SIMPLE resize...');
-    
-    if (!chatbotContainer) {
-        console.error('❌ Chatbot container not found!');
-        return;
-    }
-
-    // Global resize state - simplest possible
-    let isResizing = false;
-    let resizeDirection = '';
-    let startMouseX = 0;
-    let startMouseY = 0;
-    let startWidth = 0;
-    let startHeight = 0;
-    let startLeft = 0;
-    let startTop = 0;
-
-    // Find all resize handles
-    const handles = chatbotContainer.querySelectorAll('.resize-handle');
-    console.log('📍 Found resize handles:', handles.length);
-
-    if (handles.length === 0) {
-        console.warn('⚠️ No resize handles found!');
-        return;
-    }
-
-    // Setup each handle with the most basic approach
-    for (let i = 0; i < handles.length; i++) {
-        const handle = handles[i];
-        const direction = handle.getAttribute('data-direction');
-        
-        if (!direction) continue;
-        
-        console.log('🎯 Setting up handle:', direction);
-
-        // Mouse events - ultra basic
-        handle.addEventListener('mousedown', function(e) {
-            console.log('🖱️ Mouse down on:', direction);
-            startResize(e.clientX, e.clientY, direction);
-            e.preventDefault();
-        }, false);
-
-        // Touch events - ultra basic
-        handle.addEventListener('touchstart', function(e) {
-            console.log('👆 Touch start on:', direction);
-            if (e.touches && e.touches.length > 0) {
-                startResize(e.touches[0].clientX, e.touches[0].clientY, direction);
-                e.preventDefault();
-            }
-        }, false);
-    }
-
-    // Global mouse/touch handlers
-    document.addEventListener('mousemove', function(e) {
-        if (isResizing) {
-            doResize(e.clientX, e.clientY);
-        }
-    }, false);
-
-    document.addEventListener('mouseup', function(e) {
-        if (isResizing) {
-            stopResize();
-        }
-    }, false);
-
-    document.addEventListener('touchmove', function(e) {
-        if (isResizing && e.touches && e.touches.length > 0) {
-            doResize(e.touches[0].clientX, e.touches[0].clientY);
-            e.preventDefault();
-        }
-    }, false);
-
-    document.addEventListener('touchend', function(e) {
-        if (isResizing) {
-            stopResize();
-        }
-    }, false);
-
-    function startResize(clientX, clientY, direction) {
-        console.log('🚀 Starting resize:', direction, 'at', clientX, clientY);
-        
-        isResizing = true;
-        resizeDirection = direction;
-        startMouseX = clientX;
-        startMouseY = clientY;
-
-        const rect = chatbotContainer.getBoundingClientRect();
-        startWidth = rect.width;
-        startHeight = rect.height;
-        startLeft = rect.left;
-        startTop = rect.top;
-
-        // Disable selection and transitions
-        chatbotContainer.style.transition = 'none';
-        document.body.style.userSelect = 'none';
-        
-        console.log('📏 Start size:', Math.round(startWidth) + 'x' + Math.round(startHeight));
-    }
-
-    function doResize(clientX, clientY) {
-        if (!isResizing) return;
-
-        const deltaX = clientX - startMouseX;
-        const deltaY = clientY - startMouseY;
-
-        const minW = 280;
-        const minH = 350;
-        const maxW = window.innerWidth - 50;
-        const maxH = window.innerHeight - 50;
-
-        let newWidth = startWidth;
-        let newHeight = startHeight;
-        let newLeft = startLeft;
-        let newTop = startTop;
-
-        // Ultra simple resize logic
-        switch(resizeDirection) {
-            case 'right':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
-                break;
-            case 'left':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
-                if (newWidth !== startWidth) {
-                    newLeft = startLeft + (startWidth - newWidth);
-                }
-                break;
-            case 'bottom':
-                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
-                break;
-            case 'top':
-                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
-                if (newHeight !== startHeight) {
-                    newTop = startTop + (startHeight - newHeight);
-                }
-                break;
-            case 'bottom-right':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
-                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
-                break;
-            case 'bottom-left':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
-                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
-                if (newWidth !== startWidth) {
-                    newLeft = startLeft + (startWidth - newWidth);
-                }
-                break;
-            case 'top-right':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
-                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
-                if (newHeight !== startHeight) {
-                    newTop = startTop + (startHeight - newHeight);
-                }
-                break;
-            case 'top-left':
-                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
-                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
-                if (newWidth !== startWidth) {
-                    newLeft = startLeft + (startWidth - newWidth);
-                }
-                if (newHeight !== startHeight) {
-                    newTop = startTop + (startHeight - newHeight);
-                }
-                break;
-        }
-
-        // Apply new dimensions
-        chatbotContainer.style.width = newWidth + 'px';
-        chatbotContainer.style.height = newHeight + 'px';
-        chatbotContainer.style.left = newLeft + 'px';
-        chatbotContainer.style.top = newTop + 'px';
-        chatbotContainer.style.right = 'auto';
-        chatbotContainer.style.bottom = 'auto';
-    }
-
-    function stopResize() {
-        console.log('🛑 Stopping resize');
-        
-        isResizing = false;
-        resizeDirection = '';
-        
-        // Restore styles
-        chatbotContainer.style.transition = '';
-        document.body.style.userSelect = '';
-        
-        const rect = chatbotContainer.getBoundingClientRect();
-        console.log('🏁 Final size:', Math.round(rect.width) + 'x' + Math.round(rect.height));
-    }
-
-    console.log('✅ Ultra simple resize setup completed!');
-}
-
 // [Keep all other functions exactly the same as original chatbot.js]
 function switchLanguage(lang) {
     currentLanguage = lang;
@@ -785,6 +592,204 @@ function resetChatbot() {
     }
 }
 
+// Inline resize functionality for chatbot
+let isResizeEnabled = true;
+
+function setupUltraSimpleResize() {
+    console.log('🔧 Setting up ULTRA SIMPLE resize...');
+    
+    const chatbotContainer = document.getElementById('chatbot-container');
+    if (!chatbotContainer) {
+        console.error('❌ Chatbot container not found!');
+        return;
+    }
+
+    // Global resize state - simplest possible
+    let isResizing = false;
+    let resizeDirection = '';
+    let startMouseX = 0;
+    let startMouseY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
+    let startLeft = 0;
+    let startTop = 0;
+
+    // Find resize grip
+    const grip = document.getElementById('resize-grip');
+    if (!grip) {
+        console.warn('⚠️ Resize grip not found!');
+        return;
+    }
+
+    console.log('🎯 Setting up resize grip');
+
+    // Mouse events
+    grip.addEventListener('mousedown', function(e) {
+        console.log('🖱️ Mouse down on grip');
+        startResize(e.clientX, e.clientY, 'bottom-right');
+        e.preventDefault();
+    }, false);
+
+    // Touch events
+    grip.addEventListener('touchstart', function(e) {
+        console.log('👆 Touch start on grip');
+        if (e.touches && e.touches.length > 0) {
+            startResize(e.touches[0].clientX, e.touches[0].clientY, 'bottom-right');
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    // Find all resize handles and grip
+    const handles = chatbotContainer.querySelectorAll('.resize-handle, #resize-grip');
+    console.log('🎯 Setting up resize handles:', handles.length, 'handles found');
+    handles.forEach((h, i) => console.log('Handle', i, ':', h.id || h.className, 'direction:', h.getAttribute('data-direction')));
+
+    // Setup each handle with the most basic approach
+    for (let i = 0; i < handles.length; i++) {
+        const handle = handles[i];
+        const direction = handle.getAttribute('data-direction') || 'bottom-right'; // default for grip
+        
+        if (!direction) continue;
+        
+        console.log('🎯 Setting up handle:', direction);
+
+        // Mouse events - ultra basic
+        handle.addEventListener('mousedown', function(e) {
+            console.log('🖱️ Mouse down on:', direction, 'element:', handle);
+            startResize(e.clientX, e.clientY, direction);
+            e.preventDefault();
+        }, false);
+
+        // Touch events - ultra basic
+        handle.addEventListener('touchstart', function(e) {
+            console.log('👆 Touch start on:', direction);
+            if (e.touches && e.touches.length > 0) {
+                startResize(e.touches[0].clientX, e.touches[0].clientY, direction);
+                e.preventDefault();
+            }
+        }, { passive: false });
+    }
+
+    // Global mouse/touch handlers
+    document.addEventListener('mousemove', function(e) {
+        if (isResizing) {
+            doResize(e.clientX, e.clientY);
+        }
+    }, false);
+
+    document.addEventListener('mouseup', function(e) {
+        if (isResizing) {
+            stopResize();
+        }
+    }, false);
+
+    document.addEventListener('touchmove', function(e) {
+        if (isResizing && e.touches && e.touches.length > 0) {
+            doResize(e.touches[0].clientX, e.touches[0].clientY);
+            e.preventDefault();
+        }
+    }, { passive: false });
+
+    document.addEventListener('touchend', function(e) {
+        if (isResizing) {
+            stopResize();
+        }
+    }, false);
+
+    function startResize(clientX, clientY, direction) {
+        console.log('🚀 Starting resize:', direction, 'at', clientX, clientY);
+        
+        isResizing = true;
+        resizeDirection = direction;
+        startMouseX = clientX;
+        startMouseY = clientY;
+
+        const rect = chatbotContainer.getBoundingClientRect();
+        startWidth = rect.width;
+        startHeight = rect.height;
+        startLeft = rect.left;
+        startTop = rect.top;
+
+        // Disable selection and transitions
+        chatbotContainer.style.transition = 'none';
+        document.body.style.userSelect = 'none';
+        
+        console.log('📏 Start size:', Math.round(startWidth) + 'x' + Math.round(startHeight));
+    }
+
+    function doResize(clientX, clientY) {
+        if (!isResizeEnabled || !isResizing) return;
+
+        const deltaX = clientX - startMouseX;
+        const deltaY = clientY - startMouseY;
+
+        const minW = 280;
+        const minH = 350;
+        const maxW = window.innerWidth - 50;
+        const maxH = window.innerHeight - 50;
+
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        // Ultra simple resize logic
+        switch(resizeDirection) {
+            case 'bottom-right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                break;
+            case 'bottom-left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                if (newWidth !== startWidth) {
+                    newLeft = startLeft + (startWidth - newWidth);
+                }
+                break;
+            case 'top-right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                if (newHeight !== startHeight) {
+                    newTop = startTop + (startHeight - newHeight);
+                }
+                break;
+            case 'top-left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                if (newWidth !== startWidth) {
+                    newLeft = startLeft + (startWidth - newWidth);
+                }
+                if (newHeight !== startHeight) {
+                    newTop = startTop + (startHeight - newHeight);
+                }
+                break;
+        }
+
+        // Apply new dimensions
+        chatbotContainer.style.width = newWidth + 'px';
+        chatbotContainer.style.height = newHeight + 'px';
+        chatbotContainer.style.left = newLeft + 'px';
+        chatbotContainer.style.top = newTop + 'px';
+        chatbotContainer.style.right = 'auto';
+        chatbotContainer.style.bottom = 'auto';
+    }
+
+    function stopResize() {
+        console.log('🛑 Stopping resize');
+        
+        isResizing = false;
+        
+        // Restore styles
+        chatbotContainer.style.transition = '';
+        document.body.style.userSelect = '';
+        
+        const rect = chatbotContainer.getBoundingClientRect();
+        console.log('🏁 Final size:', Math.round(rect.width) + 'x' + Math.round(rect.height));
+    }
+
+    console.log('✅ Ultra simple resize setup completed!');
+}
+
 export function initChatbot() {
     console.log('🔧 Initializing chatbot with hosting fix...');
     
@@ -811,11 +816,8 @@ export function initChatbot() {
 
     setupDraggableChatbot();
     
-    // Use ultra simple resize setup with delay
-    setTimeout(() => {
-        console.log('🔧 Setting up ultra simple resize for hosting...');
-        setupUltraSimpleResize();
-    }, 1000);
+    // Setup resize functionality
+    setupUltraSimpleResize();
 }
 
 export { resetChatbot };
