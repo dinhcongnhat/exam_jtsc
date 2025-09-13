@@ -27,7 +27,13 @@ function switchLanguage(lang) {
         zh: '中文',
         ko: '한국어'
     };
-    appendMessage(`🌐 Đã chuyển sang ngôn ngữ: ${langNames[lang]}`, 'bot');
+    const messages = {
+        vi: `🌐 Đã chuyển sang ngôn ngữ: ${langNames[lang]}. Tôi có thể trả lời mọi câu hỏi của bạn!`,
+        en: `🌐 Switched to: ${langNames[lang]}. I can answer any question you have!`,
+        zh: `🌐 已切换到：${langNames[lang]}。我可以回答您的任何问题！`,
+        ko: `🌐 언어 변경: ${langNames[lang]}. 모든 질문에 답변해드릴 수 있습니다!`
+    };
+    appendMessage(messages[lang] || messages.vi, 'bot');
 }
 
 function toggleChatbot() {
@@ -82,20 +88,54 @@ function appendMessage(message, sender) {
     chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 }
 
-// Hàm tìm kiếm nội dung liên quan đơn giản
+// Hàm tìm kiếm nội dung liên quan cải tiến
 function searchRelevantContent(query, content) {
+    if (!content || !query) return '';
+    
+    // Kiểm tra nếu câu hỏi chắc chắn không liên quan đến nội dung pháp luật/đấu thầu
+    const nonLegalTopics = [
+        'toeic', 'ielts', 'english', 'học tập', 'giáo dục', 'khoa học', 'toán học', 'vật lý', 'hóa học',
+        'lịch sử', 'địa lý', 'văn học', 'âm nhạc', 'thể thao', 'du lịch', 'ẩm thực', 'sức khỏe',
+        'công nghệ', 'ai', 'blockchain', 'machine learning', 'programming', 'python', 'javascript',
+        'marketing', 'kinh doanh', 'quản lý', 'leadership', 'tạo câu hỏi', 'viết bài', 'giải thích'
+    ];
+    
+    const queryNormalized = query.toLowerCase()
+        .replace(/[^\w\sàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệđìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/g, ' ');
+    
+    // Nếu câu hỏi chứa các chủ đề không liên quan, trả về rỗng
+    if (nonLegalTopics.some(topic => queryNormalized.includes(topic))) {
+        return '';
+    }
+    
     const sections = content.split('\n\n');
     const relevantSections = [];
-    const keywords = query.toLowerCase().split();
+    const keywords = queryNormalized
+        .split(/\s+/)
+        .filter(word => word.length > 2); // Chỉ lấy từ có độ dài > 2
 
     for (const section of sections) {
         const sectionLower = section.toLowerCase();
-        if (keywords.some(keyword => sectionLower.includes(keyword))) {
-            relevantSections.push(section);
+        let relevanceScore = 0;
+        
+        // Tính điểm liên quan
+        for (const keyword of keywords) {
+            const occurrences = (sectionLower.match(new RegExp(keyword, 'g')) || []).length;
+            relevanceScore += occurrences;
+        }
+        
+        // Nếu có điểm liên quan, thêm vào danh sách
+        if (relevanceScore > 0) {
+            relevantSections.push({ section, score: relevanceScore });
         }
     }
 
-    return relevantSections.slice(0, 5).join('\n\n');
+    // Sắp xếp theo điểm số và lấy top 5
+    return relevantSections
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .map(item => item.section)
+        .join('\n\n');
 }
 
 // Hàm phát hiện ngôn ngữ của người dùng (ưu tiên ngôn ngữ đã chọn)
@@ -131,6 +171,79 @@ function detectLanguage(text) {
 
     // Mặc định là tiếng Việt (đối với nội dung tiếng Việt)
     return 'vi';
+}
+
+// Hàm tạo prompt cho câu hỏi chung (dựa vào kiến thức tổng quát)
+function createGeneralKnowledgePrompt(language, userMessage, websiteContext) {
+    const prompts = {
+        vi: {
+            persona: "Bạn là \"Trợ lý Học tập của JTSC\", một AI thông minh, thân thiện và chuyên nghiệp. Bạn có khả năng lập luận logic và trả lời mọi câu hỏi một cách chi tiết, chính xác.",
+            capabilities: [
+                "- Trả lời câu hỏi về mọi lĩnh vực: học thuật, công nghệ, khoa học, văn hóa, giáo dục, v.v.",
+                "- Lập luận có logic và cung cấp ví dụ cụ thể khi cần thiết",
+                "- Tạo ra nội dung học tập như bài tập, câu hỏi, giải thích khái niệm",
+                "- Phân tích và so sánh các khái niệm phức tạp",
+                "- Đưa ra lời khuyên thực tế và hữu ích"
+            ],
+            approach: "Hãy tư duy như một chuyên gia trong lĩnh vực được hỏi và trả lời một cách toàn diện, dễ hiểu."
+        },
+        en: {
+            persona: "You are \"JTSC Learning Assistant\", an intelligent, friendly, and professional AI. You can reason logically and answer any question comprehensively and accurately.",
+            capabilities: [
+                "- Answer questions across all domains: academic, technology, science, culture, education, etc.",
+                "- Provide logical reasoning and concrete examples when needed",
+                "- Create educational content like exercises, questions, concept explanations",
+                "- Analyze and compare complex concepts",
+                "- Offer practical and helpful advice"
+            ],
+            approach: "Think like an expert in the relevant field and provide comprehensive, easy-to-understand answers."
+        },
+        zh: {
+            persona: "您是\"JTSC学习助手\"，一个智能、友好且专业的AI。您能够进行逻辑推理并全面准确地回答任何问题。",
+            capabilities: [
+                "- 回答各个领域的问题：学术、技术、科学、文化、教育等",
+                "- 提供逻辑推理和具体示例",
+                "- 创建教育内容如练习、问题、概念解释",
+                "- 分析和比较复杂概念",
+                "- 提供实用和有用的建议"
+            ],
+            approach: "像相关领域的专家一样思考，提供全面易懂的答案。"
+        },
+        ko: {
+            persona: "당신은 \"JTSC 학습 도우미\"로, 지능적이고 친근하며 전문적인 AI입니다. 논리적으로 추론하고 모든 질문에 포괄적이고 정확하게 답변할 수 있습니다.",
+            capabilities: [
+                "- 모든 영역의 질문에 답변: 학술, 기술, 과학, 문화, 교육 등",
+                "- 논리적 추론과 구체적인 예시 제공",
+                "- 연습문제, 질문, 개념 설명 등 교육 콘텐츠 생성",
+                "- 복잡한 개념 분석 및 비교",
+                "- 실용적이고 도움이 되는 조언 제공"
+            ],
+            approach: "관련 분야의 전문가처럼 생각하고 포괄적이고 이해하기 쉬운 답변을 제공하세요."
+        }
+    };
+
+    const langData = prompts[language] || prompts.vi;
+
+    return `
+        **System Instructions:**
+        
+        **Persona:** ${langData.persona}
+        
+        **Your Capabilities:**
+        ${langData.capabilities.join('\n        ')}
+        
+        **Approach:** ${langData.approach}
+        
+        **Formatting Guidelines:**
+        - Sử dụng markdown để định dạng rõ ràng
+        - Cấu trúc câu trả lời logic với tiêu đề phụ khi cần
+        - Cung cấp ví dụ cụ thể để minh họa
+        - Nếu là câu hỏi phức tạp, chia nhỏ thành các phần dễ hiểu
+        
+        **User's Question:** "${userMessage}"
+        
+        **Instruction:** Hãy trả lời câu hỏi trên một cách thông minh, chi tiết và hữu ích nhất có thể. Đừng đề cập đến việc câu hỏi có trong tài liệu hay không - chỉ tập trung vào việc cung cấp câu trả lời tốt nhất.
+    `;
 }
 
 // Hàm tạo prompt theo ngôn ngữ
@@ -309,7 +422,38 @@ async function getGeminiResponse(userMessage) {
     let requestBody;
     chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
 
-    const isExternalQuestion = !questionInfo && userMessage.match(/A\)|B\)|C\)|D\)/i);
+    // Tìm kiếm nội dung liên quan trước
+    const relevantContent = searchRelevantContent(userMessage, pdfContent);
+    const hasRelevantContent = relevantContent && relevantContent.trim().length > 50; // Tăng threshold để tránh kết quả nhiễu
+    
+    // Kiểm tra xem có phải câu hỏi trắc nghiệm external không
+    const isExternalMultipleChoice = !questionInfo && userMessage.match(/A\)|B\)|C\)|D\)/i);
+    
+    // Kiểm tra xem có phải câu hỏi chung cần AI suy nghĩ không  
+    // Force general question mode cho các chủ đề chắc chắn không liên quan
+    const forceGeneralTopics = [
+        'toeic', 'ielts', 'tạo câu hỏi', 'tạo 10 câu', 'viết bài', 'cho tôi', 'hãy tạo',
+        'lịch sử việt nam', 'khoa học', 'toán học', 'giáo dục', 'học tập', 'ai là gì',
+        'blockchain', 'python', 'javascript', 'marketing', 'cách học'
+    ];
+    
+    const shouldForceGeneral = forceGeneralTopics.some(topic => 
+        userMessage.toLowerCase().includes(topic)
+    );
+    
+    // Bao gồm các trường hợp: không có thông tin liên quan, hoặc thông tin quá ít, hoặc force general
+    const isGeneralQuestion = !questionInfo && (!hasRelevantContent || shouldForceGeneral);
+
+    // Debug log
+    console.log('Chat Debug:', {
+        userMessage,
+        questionInfo: !!questionInfo,
+        relevantContentLength: relevantContent ? relevantContent.length : 0,
+        hasRelevantContent,
+        shouldForceGeneral,
+        isExternalMultipleChoice,
+        isGeneralQuestion
+    });
 
     if (questionInfo) {
         const { question, options, correctAnswerIndex, questionNumber } = questionInfo;
@@ -345,43 +489,41 @@ async function getGeminiResponse(userMessage) {
             contents: [{ role: "user", parts: [{ text: explanationPrompt }] }]
         };
 
-    } else if (isExternalQuestion) {
-        const externalMessages = {
-            vi: 'Đây là câu hỏi không thuộc tài liệu, mình sẽ trả lời dựa trên kiến thức chung nhé!',
-            en: 'This question is not in the documents, I will answer based on general knowledge!',
-            zh: '这个问题不在文档中，我会根据一般知识回答！',
-            ko: '이 질문은 문서에 없습니다. 일반 지식에 따라 답변하겠습니다!'
-        };
-
-        if (typingIndicator) typingIndicator.parentElement.remove();
-        appendMessage(externalMessages[userLanguage], 'bot');
-        appendMessage('typing...', 'bot');
-        typingIndicator = document.getElementById('typing-indicator');
+    } else if (isExternalMultipleChoice) {
+        // Trả lời trực tiếp câu hỏi trắc nghiệm external mà không cần thông báo
 
         const externalQuestionPrompt = `
             **System Instructions:**
-            1. **Persona:** You are an AI assistant that responds in the user's language.
-            2. **Core Task:** You have received a multiple-choice question that is not in the provided learning materials. Your task is to:
-                a. Analyze the question and options.
-                b. Determine the most correct answer based on your general knowledge.
-                c. Present the answer in the format: "**Answer:** [A/B/C/D].\n\n**Explanation:** [Explain why this answer is correct and why others are wrong]."
-            3. **Formatting:** Use markdown for clarity.
-            4. **Language:** Respond in the same language as the user's question.
-
-            **User's Question:**
-            "${userMessage}"
-
-            **Requirement:** Please answer the question according to the instructions.
+            
+            **Persona:** Bạn là "Trợ lý Học tập của JTSC", một AI thông minh và chuyên nghiệp, luôn trả lời bằng ngôn ngữ của người dùng.
+            
+            **Task:** Phân tích câu hỏi trắc nghiệm và đưa ra câu trả lời chính xác nhất dựa trên kiến thức của bạn.
+            
+            **Format yêu cầu:**
+            - **Đáp án:** [A/B/C/D]
+            - **Giải thích:** Giải thích chi tiết tại sao đáp án này đúng và tại sao các đáp án khác sai
+            - Sử dụng markdown để định dạng rõ ràng
+            
+            **Câu hỏi:** "${userMessage}"
+            
+            **Hướng dẫn:** Hãy phân tích kỹ lưỡng và đưa ra câu trả lời chính xác nhất với lời giải thích logic.
         `;
 
         requestBody = {
             contents: [{ role: "user", parts: [{ text: externalQuestionPrompt }] }]
         };
 
-    } else {
-        // Tìm kiếm nội dung liên quan
-        const relevantContent = searchRelevantContent(userMessage, pdfContent);
+    } else if (isGeneralQuestion) {
+        // Câu hỏi chung cần AI suy nghĩ - trả lời trực tiếp không cần thông báo
 
+        const generalQuestionPrompt = createGeneralKnowledgePrompt(userLanguage, userMessage, websiteContext);
+        
+        requestBody = {
+            contents: [{ role: "user", parts: [{ text: generalQuestionPrompt }] }]
+        };
+
+    } else {
+        // Có nội dung liên quan trong tài liệu
         // Tạo prompt đa ngôn ngữ
         const systemPrompt = createMultilingualPrompt(userLanguage, relevantContent, userMessage, websiteContext);
 
@@ -411,14 +553,15 @@ async function getGeminiResponse(userMessage) {
 
             if (data.candidates?.[0]?.content?.parts?.[0]) {
                 const botMessage = data.candidates[0].content.parts[0].text;
-                // Only add the actual bot response to history
-                if (!isExternalQuestion && !questionInfo) {
+                
+                // Quản lý chat history
+                if (!isExternalMultipleChoice && !questionInfo && !isGeneralQuestion) {
+                    // Câu hỏi thường có trong tài liệu - thêm vào history
                     chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
                 } else {
-                    // For special cases, we pop the user message and add both to keep history clean
-                    chatHistory.pop();
-                    chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
-                    chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
+                    // Câu hỏi đặc biệt (external questions, general questions) - không thêm vào history để tránh nhiễu
+                    chatHistory.pop(); // Xóa câu hỏi user vừa thêm
+                    // Không thêm vào history để giữ context sạch
                 }
 
                 if (typingIndicator) typingIndicator.parentElement.remove();
