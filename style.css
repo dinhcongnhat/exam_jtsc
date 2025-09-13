@@ -84,25 +84,88 @@ body {
     max-height: 500px; /* Adjust if more space is needed */
 }
 
-#resize-handle {
+/* Resize handles for all directions */
+.resize-handle {
     position: absolute;
-    bottom: 0;
-    right: 0;
-    width: 20px;
-    height: 20px;
-    background-size: 16px 16px;
-    background-repeat: no-repeat;
-    background-position: center;
-    cursor: se-resize;
-    border-radius: 0 0 8px 0;
-    opacity: 0.8;
-    transition: opacity 0.2s;
-    transform: scaleX(-1); /* Lật icon theo chiều ngang */
+    opacity: 0;
+    background-color: transparent;
+    transition: none;
 }
 
-#resize-handle:hover {
-    opacity: 1;
-    background-color: rgba(255, 255, 255, 0.1);
+.resize-handle:hover {
+    opacity: 0;
+    background-color: transparent;
+}
+
+/* Top resize handle */
+.resize-handle-top {
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    cursor: n-resize;
+    border-radius: 0 0 4px 4px;
+}
+
+/* Bottom resize handle */
+.resize-handle-bottom {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 8px;
+    cursor: s-resize;
+    border-radius: 4px 4px 0 0;
+}
+
+/* Left resize handle */
+.resize-handle-left {
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: w-resize;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Right resize handle */
+.resize-handle-right {
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    cursor: e-resize;
+    border-radius: 4px 0 0 4px;
+}
+
+/* Corner resize handles */
+.resize-handle-corner {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+}
+
+.resize-handle-top-left {
+    top: 0;
+    left: 0;
+    cursor: nw-resize;
+}
+
+.resize-handle-top-right {
+    top: 0;
+    right: 0;
+    cursor: ne-resize;
+}
+
+.resize-handle-bottom-left {
+    bottom: 0;
+    left: 0;
+    cursor: sw-resize;
+}
+
+.resize-handle-bottom-right {
+    bottom: 0;
+    right: 0;
+    cursor: se-resize;
 }
 
  @keyframes pulse-shadow {

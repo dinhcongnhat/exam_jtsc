@@ -11,7 +11,7 @@ const chatbotForm = document.getElementById('chatbot-form');
 const chatbotInput = document.getElementById('chatbot-input');
 const chatbotSendBtn = document.getElementById('chatbot-send-btn');
 const chatbotMessages = document.getElementById('chatbot-messages');
-const resizeHandle = document.getElementById('resize-handle');
+const resizeHandles = document.querySelectorAll('.resize-handle');
 
 let chatHistory = [];
 let currentLanguage = 'vi'; // Ngôn ngữ mặc định
@@ -616,30 +616,89 @@ function setupDraggableChatbot() {
 }
 
 function setupResizableChatbot() {
-    resizeHandle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        chatbotContainer.style.transition = 'none';
-        const minWidth = 300, minHeight = 400;
-        const startWidth = chatbotContainer.offsetWidth;
-        const startHeight = chatbotContainer.offsetHeight;
-        const startX = e.clientX;
-        const startY = e.clientY;
+    resizeHandles.forEach(handle => {
+        handle.addEventListener('mousedown', (e) => {
+            e.preventDefault();
+            chatbotContainer.style.transition = 'none';
+            
+            const minWidth = 300, minHeight = 400;
+            const maxWidth = window.innerWidth * 0.9;
+            const maxHeight = window.innerHeight * 0.9;
+            
+            const startWidth = chatbotContainer.offsetWidth;
+            const startHeight = chatbotContainer.offsetHeight;
+            const startX = e.clientX;
+            const startY = e.clientY;
+            const direction = handle.dataset.direction;
+            
+            // Get container position
+            const rect = chatbotContainer.getBoundingClientRect();
+            const startLeft = rect.left;
+            const startTop = rect.top;
 
-        function onMouseMove(e) {
-            const width = Math.max(minWidth, startWidth + (e.clientX - startX));
-            const height = Math.max(minHeight, startHeight + (e.clientY - startY));
-            chatbotContainer.style.width = `${width}px`;
-            chatbotContainer.style.height = `${height}px`;
-        }
+            function onMouseMove(e) {
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                let newWidth = startWidth;
+                let newHeight = startHeight;
+                let newLeft = startLeft;
+                let newTop = startTop;
 
-        function onMouseUp() {
-            chatbotContainer.style.transition = '';
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
+                switch(direction) {
+                    case 'right':
+                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+                        break;
+                    case 'left':
+                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
+                        newLeft = startLeft + (startWidth - newWidth);
+                        break;
+                    case 'bottom':
+                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+                        break;
+                    case 'top':
+                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
+                        newTop = startTop + (startHeight - newHeight);
+                        break;
+                    case 'bottom-right':
+                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+                        break;
+                    case 'bottom-left':
+                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
+                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
+                        newLeft = startLeft + (startWidth - newWidth);
+                        break;
+                    case 'top-right':
+                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
+                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
+                        newTop = startTop + (startHeight - newHeight);
+                        break;
+                    case 'top-left':
+                        newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
+                        newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
+                        newLeft = startLeft + (startWidth - newWidth);
+                        newTop = startTop + (startHeight - newHeight);
+                        break;
+                }
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+                chatbotContainer.style.width = `${newWidth}px`;
+                chatbotContainer.style.height = `${newHeight}px`;
+                chatbotContainer.style.left = `${newLeft}px`;
+                chatbotContainer.style.top = `${newTop}px`;
+                chatbotContainer.style.right = 'auto';
+                chatbotContainer.style.bottom = 'auto';
+            }
+
+            function onMouseUp() {
+                chatbotContainer.style.transition = '';
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onMouseUp);
+            }
+
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+        });
     });
 }
 

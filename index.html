@@ -248,11 +248,17 @@
                 <button type="submit" id="chatbot-send-btn" class="bg-blue-700 text-white px-2 md:px-4 rounded-r-lg hover:bg-blue-800 disabled:bg-blue-400 text-sm md:text-base">Gửi</button>
             </div>
         </form>
-        <div id="resize-handle" class="absolute bottom-0 right-0 cursor-se-resize w-4 h-4 flex items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-gray-400 hover:text-gray-600 transition-colors" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M22 22H20V20H22V22ZM22 18H20V16H22V18ZM18 22H16V20H18V22ZM18 18H16V16H18V18ZM14 22H12V20H14V22ZM22 14H20V12H22V14Z"/>
-            </svg>
-        </div>
+        <!-- Resize handles for all directions -->
+        <div class="resize-handle resize-handle-top" data-direction="top"></div>
+        <div class="resize-handle resize-handle-bottom" data-direction="bottom"></div>
+        <div class="resize-handle resize-handle-left" data-direction="left"></div>
+        <div class="resize-handle resize-handle-right" data-direction="right"></div>
+        
+        <!-- Corner resize handles -->
+        <div class="resize-handle resize-handle-corner resize-handle-top-left" data-direction="top-left"></div>
+        <div class="resize-handle resize-handle-corner resize-handle-top-right" data-direction="top-right"></div>
+        <div class="resize-handle resize-handle-corner resize-handle-bottom-left" data-direction="bottom-left"></div>
+        <div class="resize-handle resize-handle-corner resize-handle-bottom-right" data-direction="bottom-right"></div>
     </div>
         <script type="module" src="js/main.js"></script>
     </script>
