@@ -41,8 +41,8 @@ body {
 }
 
 #chatbot-container {
-    width: 400px; /* Increased width */
-    max-width: 80%; /* Responsive design */
+    width: 500px; /* Default width */
+    max-width: 90%; /* Responsive design */
     transition: all 0.3s ease-in-out;
     transform: translateY(1rem);
     opacity: 0;
@@ -88,11 +88,24 @@ body {
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 10px;
-    height: 10px;
-    background-color: #cbd5e1;
+    width: 20px;
+    height: 20px;
+    background-image: url('https://brandeps.com/icon-download/R/Resize-icon-vector-02.svg');
+    background-size: 16px 16px;
+    background-repeat: no-repeat;
+    background-position: center;
     cursor: se-resize;
+    border-radius: 0 0 8px 0;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+    transform: scaleX(-1); /* Lật icon theo chiều ngang */
 }
+
+#resize-handle:hover {
+    opacity: 1;
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
  @keyframes pulse-shadow {
             0% {
                 transform: scale(1);
@@ -115,4 +128,10 @@ body {
             animation: pulse-shadow 1.5 infinite;
         }
 
-       
+@media (max-width: 768px) {
+    #chatbot-container {
+        width: 90%;
+        max-width: 90%;
+    }
+}
+
