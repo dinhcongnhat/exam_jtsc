@@ -616,125 +616,210 @@ function setupDraggableChatbot() {
 }
 
 function setupResizableChatbot() {
-    // Đảm bảo resize handles đã được load
-    setTimeout(() => {
-        const handles = document.querySelectorAll('.resize-handle');
-        console.log('Found resize handles:', handles.length); // Debug log
+    console.log('🔄 Setting up resize (cPanel compatible)...');
+    
+    // Đảm bảo chatbot container tồn tại
+    var container = document.getElementById('chatbot-container');
+    if (!container) {
+        console.error('❌ Chatbot container not found!');
+        return;
+    }
+    
+    console.log('✅ Chatbot container found');
+    
+    // Biến global đơn giản
+    var isResizing = false;
+    var currentDirection = '';
+    var startMouseX = 0, startMouseY = 0;
+    var startWidth = 0, startHeight = 0;
+    var startLeft = 0, startTop = 0;
+
+    // Tìm tất cả resize handles
+    var handles = container.querySelectorAll('.resize-handle');
+    console.log('📍 Found', handles.length, 'resize handles');
+    
+    if (handles.length === 0) {
+        console.warn('⚠️ No resize handles found!');
+        return;
+    }
+
+    // Setup từng handle một cách đơn giản
+    for (var i = 0; i < handles.length; i++) {
+        var handle = handles[i];
+        var direction = handle.getAttribute('data-direction');
         
-        handles.forEach(handle => {
-            // Hỗ trợ cả mouse và touch events
-            const startEvents = ['mousedown', 'touchstart'];
-            const moveEvents = ['mousemove', 'touchmove'];
-            const endEvents = ['mouseup', 'touchend'];
+        if (!direction) {
+            console.warn('⚠️ Handle missing data-direction:', handle.className);
+            continue;
+        }
+        
+        console.log('🎯 Setting up handle:', direction);
+        
+        // Sử dụng closure để capture direction
+        (function(dir, handleEl) {
+            // Mouse events
+            handleEl.onmousedown = function(e) {
+                console.log('🖱️ Mouse down on:', dir);
+                startResize(e.clientX, e.clientY, dir);
+                e.preventDefault();
+                return false;
+            };
             
-            startEvents.forEach(eventType => {
-                handle.addEventListener(eventType, (e) => {
-                    e.preventDefault();
-                    console.log('Resize started:', handle.dataset.direction); // Debug log
-                    
-                    chatbotContainer.style.transition = 'none';
-                    
-                    const minWidth = 300, minHeight = 400;
-                    const maxWidth = window.innerWidth * 0.9;
-                    const maxHeight = window.innerHeight * 0.9;
-                    
-                    const startWidth = chatbotContainer.offsetWidth;
-                    const startHeight = chatbotContainer.offsetHeight;
-                    
-                    // Lấy tọa độ từ mouse hoặc touch
-                    const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-                    const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-                    
-                    const startX = clientX;
-                    const startY = clientY;
-                    const direction = handle.dataset.direction;
-                    
-                    // Get container position
-                    const rect = chatbotContainer.getBoundingClientRect();
-                    const startLeft = rect.left;
-                    const startTop = rect.top;
+            // Touch events
+            handleEl.ontouchstart = function(e) {
+                console.log('👆 Touch start on:', dir);
+                if (e.touches && e.touches.length > 0) {
+                    startResize(e.touches[0].clientX, e.touches[0].clientY, dir);
+                }
+                e.preventDefault();
+                return false;
+            };
+        })(direction, handle);
+    }
 
-                    function onMove(e) {
-                        const currentX = e.clientX || (e.touches && e.touches[0].clientX);
-                        const currentY = e.clientY || (e.touches && e.touches[0].clientY);
-                        
-                        const deltaX = currentX - startX;
-                        const deltaY = currentY - startY;
-                        
-                        let newWidth = startWidth;
-                        let newHeight = startHeight;
-                        let newLeft = startLeft;
-                        let newTop = startTop;
+    // Global event handlers - sử dụng property thay vì addEventListener
+    var originalMouseMove = document.onmousemove;
+    var originalMouseUp = document.onmouseup;
+    var originalTouchMove = document.ontouchmove;
+    var originalTouchEnd = document.ontouchend;
 
-                        switch(direction) {
-                            case 'right':
-                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
-                                break;
-                            case 'left':
-                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
-                                newLeft = startLeft + (startWidth - newWidth);
-                                break;
-                            case 'bottom':
-                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
-                                break;
-                            case 'top':
-                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
-                                newTop = startTop + (startHeight - newHeight);
-                                break;
-                            case 'bottom-right':
-                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
-                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
-                                break;
-                            case 'bottom-left':
-                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
-                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight + deltaY));
-                                newLeft = startLeft + (startWidth - newWidth);
-                                break;
-                            case 'top-right':
-                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth + deltaX));
-                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
-                                newTop = startTop + (startHeight - newHeight);
-                                break;
-                            case 'top-left':
-                                newWidth = Math.max(minWidth, Math.min(maxWidth, startWidth - deltaX));
-                                newHeight = Math.max(minHeight, Math.min(maxHeight, startHeight - deltaY));
-                                newLeft = startLeft + (startWidth - newWidth);
-                                newTop = startTop + (startHeight - newHeight);
-                                break;
-                        }
+    document.onmousemove = function(e) {
+        if (isResizing) {
+            doResize(e.clientX, e.clientY);
+        }
+        // Call original handler if exists
+        if (originalMouseMove) originalMouseMove.call(this, e);
+    };
 
-                        chatbotContainer.style.width = `${newWidth}px`;
-                        chatbotContainer.style.height = `${newHeight}px`;
-                        chatbotContainer.style.left = `${newLeft}px`;
-                        chatbotContainer.style.top = `${newTop}px`;
-                        chatbotContainer.style.right = 'auto';
-                        chatbotContainer.style.bottom = 'auto';
-                    }
+    document.onmouseup = function(e) {
+        if (isResizing) {
+            stopResize();
+        }
+        // Call original handler if exists
+        if (originalMouseUp) originalMouseUp.call(this, e);
+    };
 
-                    function onEnd() {
-                        console.log('Resize ended'); // Debug log
-                        chatbotContainer.style.transition = '';
-                        
-                        // Remove all event listeners
-                        moveEvents.forEach(moveType => {
-                            document.removeEventListener(moveType, onMove);
-                        });
-                        endEvents.forEach(endType => {
-                            document.removeEventListener(endType, onEnd);
-                        });
-                    }
+    document.ontouchmove = function(e) {
+        if (isResizing && e.touches && e.touches.length > 0) {
+            doResize(e.touches[0].clientX, e.touches[0].clientY);
+            e.preventDefault();
+        }
+        // Call original handler if exists
+        if (originalTouchMove) originalTouchMove.call(this, e);
+    };
 
-                    // Add event listeners for move and end
-                    moveEvents.forEach(moveType => {
-                        document.addEventListener(moveType, onMove, { passive: false });
-                    });
-                    endEvents.forEach(endType => {
-                        document.addEventListener(endType, onEnd);
-                    });
-                }, { passive: false });
-            });
-        });
-    }, 100); // Delay 100ms để đảm bảo DOM đã load
+    document.ontouchend = function(e) {
+        if (isResizing) {
+            stopResize();
+        }
+        // Call original handler if exists
+        if (originalTouchEnd) originalTouchEnd.call(this, e);
+    };
+
+    function startResize(clientX, clientY, direction) {
+        console.log('🚀 Starting resize:', direction);
+        
+        isResizing = true;
+        currentDirection = direction;
+        startMouseX = clientX;
+        startMouseY = clientY;
+
+        var rect = container.getBoundingClientRect();
+        startWidth = rect.width;
+        startHeight = rect.height;
+        startLeft = rect.left;
+        startTop = rect.top;
+
+        // Disable transitions and text selection
+        container.style.transition = 'none';
+        document.body.style.userSelect = 'none';
+        document.body.style.webkitUserSelect = 'none';
+        document.body.style.mozUserSelect = 'none';
+        document.body.style.msUserSelect = 'none';
+        
+        console.log('📏 Start dimensions:', Math.round(startWidth) + 'x' + Math.round(startHeight));
+    }
+
+    function doResize(clientX, clientY) {
+        if (!isResizing) return;
+
+        var deltaX = clientX - startMouseX;
+        var deltaY = clientY - startMouseY;
+
+        var minW = 300, minH = 400;
+        var maxW = window.innerWidth * 0.9;
+        var maxH = window.innerHeight * 0.9;
+
+        var newWidth = startWidth;
+        var newHeight = startHeight;
+        var newLeft = startLeft;
+        var newTop = startTop;
+
+        // Simple resize logic
+        switch(currentDirection) {
+            case 'right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                break;
+            case 'left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newLeft = startLeft + (startWidth - newWidth);
+                break;
+            case 'bottom':
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                break;
+            case 'top':
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                newTop = startTop + (startHeight - newHeight);
+                break;
+            case 'bottom-right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                break;
+            case 'bottom-left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                newLeft = startLeft + (startWidth - newWidth);
+                break;
+            case 'top-right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                newTop = startTop + (startHeight - newHeight);
+                break;
+            case 'top-left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                newLeft = startLeft + (startWidth - newWidth);
+                newTop = startTop + (startHeight - newHeight);
+                break;
+        }
+
+        // Apply styles
+        container.style.width = newWidth + 'px';
+        container.style.height = newHeight + 'px';
+        container.style.left = newLeft + 'px';
+        container.style.top = newTop + 'px';
+        container.style.right = 'auto';
+        container.style.bottom = 'auto';
+    }
+
+    function stopResize() {
+        console.log('🛑 Stopping resize');
+        
+        isResizing = false;
+        currentDirection = '';
+        
+        // Restore styles
+        container.style.transition = '';
+        document.body.style.userSelect = '';
+        document.body.style.webkitUserSelect = '';
+        document.body.style.mozUserSelect = '';
+        document.body.style.msUserSelect = '';
+        
+        var rect = container.getBoundingClientRect();
+        console.log('🏁 Final dimensions:', Math.round(rect.width) + 'x' + Math.round(rect.height));
+    }
+
+    console.log('🎉 Resize setup completed!');
 }
 
 // Hàm reset trạng thái chatbot
@@ -781,15 +866,11 @@ export function initChatbot() {
 
     setupDraggableChatbot();
     
-    // Đảm bảo resize setup được gọi sau khi DOM hoàn toàn ready
-    if (document.readyState === 'complete') {
+    // Sử dụng phiên bản đơn giản hơn cho cPanel
+    setTimeout(() => {
+        console.log('Setting up cPanel-compatible resize...');
         setupResizableChatbot();
-    } else {
-        window.addEventListener('load', () => {
-            console.log('Window loaded, setting up resize...'); // Debug log
-            setupResizableChatbot();
-        });
-    }
+    }, 500);
 }
 
 // Export hàm reset để sử dụng từ bên ngoài
