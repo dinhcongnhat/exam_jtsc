@@ -46,7 +46,7 @@ function toggleChatbot() {
     if (!chatbotContainer.classList.contains('hidden') && !welcomeMessageShown) {
         setTimeout(() => {
             const welcomeMessages = {
-                vi: "JTSC xin chào! Có khó khăn gì trong quá trình làm bài hãy hỏi tôi nhé!",
+                vi: "JTSC xin chào! Tôi là một trợ lý được đào tạo bởi đội ngũ JTSC hỗ trợ bạn trong quá trình ôn tập. Hãy hỏi tôi bất cứ điều gì liên quan đến nội dung pháp luật và đấu thầu! Tôi cũng có thể trợ giúp bạn trong nhiều lĩnh vực khác. HÃY HỎI TÔI NẾU BẠN CẦN GIÚP ĐỠ!",
                 en: "Hello from JTSC! Feel free to ask me if you have any difficulties during the exam!",
                 zh: "JTSC问候您！考试过程中遇到任何困难都可以问我！",
                 ko: "JTSC에서 인사드립니다! 시험 중에 어려움이 있으면 언제든 물어보세요!"
