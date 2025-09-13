@@ -26,7 +26,7 @@ function appendMessage(message, sender) {
     const messagesContainer = document.querySelector('#chatbot-messages .relative.z-10');
     const messageWrapper = document.createElement('div');
     messageWrapper.classList.add('flex', 'mb-4', 'max-w-full');
-    
+
     const messageElement = document.createElement('div');
     messageElement.classList.add('p-4', 'rounded-lg', 'break-words', 'shadow-sm');
 
@@ -47,16 +47,32 @@ function appendMessage(message, sender) {
             messageElement.innerHTML = formattedMessage;
         }
     }
-    
+
     messageWrapper.appendChild(messageElement);
     messagesContainer.appendChild(messageWrapper);
     chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
 }
 
+// Hàm tìm kiếm nội dung liên quan đơn giản
+function searchRelevantContent(query, content) {
+    const sections = content.split('\n\n');
+    const relevantSections = [];
+    const keywords = query.toLowerCase().split();
+
+    for (const section of sections) {
+        const sectionLower = section.toLowerCase();
+        if (keywords.some(keyword => sectionLower.includes(keyword))) {
+            relevantSections.push(section);
+        }
+    }
+
+    return relevantSections.slice(0, 5).join('\n\n');
+}
+
 async function getGeminiResponse(userMessage) {
     const GEMINI_API_KEY = "AIzaSyCVEzm4DaJcsWDyKjWnlOVzd69wQKXCJNI";
     const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`;
-    
+
     const MAX_RETRIES = 3;
     const RETRY_DELAY = 1500;
 
@@ -105,7 +121,7 @@ async function getGeminiResponse(userMessage) {
             };
         }
     }
-    
+
     let requestBody;
     chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
 
@@ -121,11 +137,14 @@ async function getGeminiResponse(userMessage) {
         }).join('\n');
 
         const responseMessage = `📝 **Câu hỏi ${questionNumber}**\n━━━━━━━━━━━━━━━━━━━━━━\n${question}\n\n**Các phương án trả lời:**\n${optionsStringForDisplay}\n\n✅ **Đáp án chính xác:** ${correctAnswerLetter}`;
-        
+
         if (typingIndicator) typingIndicator.parentElement.remove();
         appendMessage(responseMessage, 'bot');
         appendMessage('typing...', 'bot');
         typingIndicator = document.getElementById('typing-indicator');
+
+        // Tìm kiếm nội dung liên quan
+        const relevantContent = searchRelevantContent(question, pdfContent);
 
         const explanationPrompt = `
             **System Instructions:**
@@ -134,7 +153,7 @@ async function getGeminiResponse(userMessage) {
             3. **Formatting:** Dùng markdown, bắt đầu bằng việc xác nhận đáp án đúng, sau đó giải thích chi tiết.
 
             --- BẮT ĐẦU KHỐI KIẾN THỨC ---
-            ${pdfContent}
+            ${relevantContent}
             --- KẾT THÚC KHỐI KIẾN THỨC ---
 
             **Câu hỏi cần giải thích:**
@@ -144,7 +163,7 @@ async function getGeminiResponse(userMessage) {
 
             **Yêu cầu:** Hãy giải thích câu trả lời cho câu hỏi trên.
         `;
-        
+
         requestBody = {
             contents: [{ role: "user", parts: [{ text: explanationPrompt }] }]
         };
@@ -175,32 +194,34 @@ async function getGeminiResponse(userMessage) {
         };
 
     } else {
+        // Tìm kiếm nội dung liên quan
+        const relevantContent = searchRelevantContent(userMessage, pdfContent);
+
+        const systemPrompt = `
+        **System Instructions:**
+        1. **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện, chuyên nghiệp, và luôn trả lời bằng tiếng Việt.
+        2. **Core Task:** Trả lời dựa trên KHỐI KIẾN THỨC được cung cấp.
+        3. **Formatting:** Dùng markdown.
+
+        --- BẮT ĐẦU KHỐI KIẾN THỨC ---
+        ${relevantContent || 'Không có nội dung liên quan.'}
+        --- KẾT THÚC KHỐI KIẾN THỨC ---
+
+        **Current User Context:**
+        - Đang ở màn hình: ${websiteContext.screen}
+        - Đang làm bài thi: ${websiteContext.quizTitle}
+        - Tiến độ: ${websiteContext.progress}
+        `;
+
         requestBody = {
             contents: chatHistory,
             systemInstruction: {
-                parts: [{
-                    text: `
-                    **System Instructions:**
-                    1. **Persona:** Bạn là "Trợ lý Học tập của JTSC", một AI thân thiện, chuyên nghiệp, trả lời bằng tiếng Việt.
-                    2. **Core Task:**
-                       - **ƯU TIÊN 1:** Trả lời câu hỏi của người dùng dựa vào "KHỐI KIẾN THỨC" dưới đây.
-                       - **ƯU TIÊN 2:** Nếu không tìm thấy, hãy dùng kiến thức chung để trả lời.
-                    3. **Formatting:** Dùng markdown.
-
-                    --- BẮT ĐẦU KHỐI KIẾN THỨC ---
-                    ${pdfContent}
-                    --- KẾT THÚC KHỐI KIẾN THỨC ---
-
-                    **Current User Context:**
-                    - Đang ở màn hình: ${websiteContext.screen}
-                    - Đang làm bài thi: ${websiteContext.quizTitle}
-                    - Tiến độ: ${websiteContext.progress}
-                    `
-                }]
+                parts: [{ text: systemPrompt }]
             }
         };
     }
 
+    // Thực hiện API call
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
             const response = await fetch(API_URL, {
@@ -211,11 +232,11 @@ async function getGeminiResponse(userMessage) {
                     generationConfig: { temperature: 0.2, topK: 40, topP: 0.95, maxOutputTokens: 1024 }
                 })
             });
-            
+
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
+
             const data = await response.json();
-            
+
             if (data.candidates?.[0]?.content?.parts?.[0]) {
                 const botMessage = data.candidates[0].content.parts[0].text;
                 // Only add the actual bot response to history
@@ -227,7 +248,7 @@ async function getGeminiResponse(userMessage) {
                     chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
                     chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
                 }
-                
+
                 if (typingIndicator) typingIndicator.parentElement.remove();
                 appendMessage(botMessage, 'bot');
                 chatbotSendBtn.disabled = false;
@@ -247,11 +268,10 @@ async function getGeminiResponse(userMessage) {
             }
         }
     }
-    
+
     chatbotSendBtn.disabled = false;
 }
 
-// Unchanged functions below...
 function setupDraggableChatbot() {
     let isDragging = false;
     let offsetX, offsetY;
