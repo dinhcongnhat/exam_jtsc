@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Random Quiz - No Shuffle</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .question { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .options { margin: 10px 0; }
+        .correct { background-color: #d4edda; color: #155724; font-weight: bold; }
+        .test-info { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+    </style>
+</head>
+<body>
+    <div class="test-info">
+        <h2>🧪 Test Random Quiz - Kiểm tra việc giữ nguyên vị trí đáp án</h2>
+        <p><strong>Mục đích:</strong> Đảm bảo khi tạo đề ngẫu nhiên, vị trí đáp án A, B, C, D được giữ nguyên như trong đề gốc.</p>
+        <button onclick="runTest()">Chạy Test</button>
+        <button onclick="console.clear()">Clear Console</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script type="module">
+        import { allQuizzes } from './js/quiz-data.js';
+        
+        // Simplified version of createRandomQuiz for testing
+        function createTestRandomQuiz(numQuestions = 5) {
+            const allSourceQuestions = [];
+            if (allQuizzes.exam1 && allQuizzes.exam1.questions) {
+                allSourceQuestions.push(...allQuizzes.exam1.questions);
+            }
+            if (allQuizzes.exam2 && allQuizzes.exam2.questions) {
+                allSourceQuestions.push(...allQuizzes.exam2.questions);
+            }
+            if (allQuizzes.exam3 && allQuizzes.exam3.questions) {
+                allSourceQuestions.push(...allQuizzes.exam3.questions);
+            }
+
+            if (allSourceQuestions.length === 0) {
+                console.error("Không tìm thấy câu hỏi nguồn từ các đề 1, 2, 3.");
+                return [];
+            }
+
+            // Chọn ngẫu nhiên một số câu để test
+            const shuffledQuestions = [...allSourceQuestions]
+                .sort(() => Math.random() - 0.5)
+                .slice(0, numQuestions)
+                .map((q, index) => {
+                    // Deep copy và giữ nguyên vị trí đáp án
+                    const questionCopy = {
+                        Câu: index + 1,
+                        question: q.question,
+                        options: q.options.map(opt => ({
+                            label: opt.label,
+                            text: opt.text
+                        })),
+                        correctAnswer: q.correctAnswer,
+                        originalCau: q.Câu // Lưu số câu gốc để so sánh
+                    };
+                    
+                    return questionCopy;
+                });
+
+            return shuffledQuestions;
+        }
+        
+        window.runTest = function() {
+            console.log('🚀 Bắt đầu test random quiz...\n');
+            
+            const randomQuestions = createTestRandomQuiz(5);
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '';
+            
+            randomQuestions.forEach((q, index) => {
+                const questionDiv = document.createElement('div');
+                questionDiv.className = 'question';
+                
+                const correctOption = q.options[q.correctAnswer];
+                
+                questionDiv.innerHTML = `
+                    <h4>Câu ${index + 1} (Gốc: Câu ${q.originalCau || 'N/A'})</h4>
+                    <p><strong>Câu hỏi:</strong> ${q.question}</p>
+                    <div class="options">
+                        ${q.options.map((opt, optIndex) => `
+                            <div class="${optIndex === q.correctAnswer ? 'correct' : ''}">
+                                ${opt.label}. ${opt.text}
+                            </div>
+                        `).join('')}
+                    </div>
+                    <p><strong>Đáp án đúng:</strong> ${correctOption.label} - ${correctOption.text}</p>
+                `;
+                
+                resultsDiv.appendChild(questionDiv);
+                
+                console.log(`✅ Câu ${index + 1}:`, {
+                    question: q.question.substring(0, 50) + '...',
+                    correctAnswer: q.correctAnswer,
+                    correctLabel: correctOption.label,
+                    correctText: correctOption.text.substring(0, 50) + '...',
+                    allOptions: q.options.map(opt => `${opt.label}: ${opt.text.substring(0, 30)}...`)
+                });
+            });
+            
+            console.log(`\n🎯 Test hoàn thành! Đã tạo ${randomQuestions.length} câu hỏi ngẫu nhiên với vị trí đáp án được giữ nguyên.`);
+        };
+        
+        // Auto run test when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                runTest();
+            }, 500);
+        });
+    </script>
+</body>
+</html>

@@ -11,7 +11,7 @@ export let currentQuestions = [];
 
 // --- QUIZ LOGIC ---
 
-// Hàm xáo trộn mảng (Fisher-Yates shuffle)
+// Hàm xáo trộn mảng (Fisher-Yates shuffle) - hiện tại không sử dụng để tránh xáo trộn đáp án
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -19,7 +19,7 @@ function shuffle(array) {
   }
 }
 
-// Hàm tạo đề thi ngẫu nhiên với shuffle đáp án an toàn
+// Hàm tạo đề thi ngẫu nhiên - giữ nguyên vị trí đáp án
 function createRandomQuiz() {
     // Gom tất cả câu hỏi từ các đề 1, 2, 3
     const allSourceQuestions = [];
@@ -39,82 +39,30 @@ function createRandomQuiz() {
         return [];
     }
 
-    // Tạo deep copy và shuffle câu hỏi
+    // Tạo deep copy và shuffle chỉ thứ tự câu hỏi, KHÔNG shuffle đáp án
     const shuffledQuestions = [...allSourceQuestions]
         .sort(() => Math.random() - 0.5)
         .slice(0, 100)
-        .map(q => {
-            // Deep copy câu hỏi với proper object handling
+        .map((q, index) => {
+            // Deep copy câu hỏi và giữ nguyên vị trí đáp án
             const questionCopy = {
+                Câu: index + 1, // Đánh số lại từ 1-100
                 question: q.question,
                 options: q.options.map(opt => ({
-                    // Deep copy từng option object
+                    // Deep copy từng option object - giữ nguyên label và text
                     label: opt.label,
                     text: opt.text
                 })),
-                correctAnswer: q.correctAnswer
+                correctAnswer: q.correctAnswer // Giữ nguyên vị trí đáp án đúng
             };
             
-            // Lưu đáp án đúng ban đầu để verification (so sánh theo text)
-            const originalCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
-            
-            // Tạo array với index để track vị trí
-            const optionsWithIndex = questionCopy.options.map((option, index) => ({
-                option: option,
-                originalIndex: index
-            }));
-            
-            // Shuffle options
-            shuffle(optionsWithIndex);
-            
-            // Cập nhật lại options với labels mới (A, B, C, D)
-            questionCopy.options = optionsWithIndex.map((item, newIndex) => ({
-                label: String.fromCharCode(65 + newIndex), // A, B, C, D
-                text: item.option.text
-            }));
-            
-            // Cập nhật correctAnswer
-            questionCopy.correctAnswer = optionsWithIndex.findIndex(item => 
-                item.originalIndex === q.correctAnswer
-            );
-            
-            // Verification: Kiểm tra đáp án sau shuffle vẫn đúng
-            const newCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
-            
-            // Enhanced debugging
-            console.group(`🔍 Shuffle Debug: ${q.question.substring(0, 40)}...`);
-            console.log('Original data:', {
-                question: q.question.substring(0, 50) + '...',
-                originalCorrectIndex: q.correctAnswer,
-                originalCorrectText: originalCorrectText,
-                allOriginalOptions: q.options.map((opt, idx) => `${idx}: ${opt.text}`)
-            });
-            
-            console.log('After shuffle:', {
-                newCorrectIndex: questionCopy.correctAnswer,
-                newCorrectText: newCorrectText,
-                allNewOptions: questionCopy.options.map((opt, idx) => `${opt.label}(${idx}): ${opt.text}`),
-                optionsWithIndex: optionsWithIndex.map(item => ({
-                    originalIndex: item.originalIndex,
-                    text: item.option.text.substring(0, 30) + '...'
-                }))
-            });
-            
-            if (originalCorrectText !== newCorrectText) {
-                console.error('❌ Shuffle error: Correct answer mismatch!', {
-                    originalText: originalCorrectText,
-                    newText: newCorrectText,
-                    originalIndex: q.correctAnswer,
-                    newIndex: questionCopy.correctAnswer
-                });
-            } else {
-                console.log('✅ Shuffle verification passed');
-            }
-            console.groupEnd();
+            // Log để kiểm tra việc giữ nguyên đáp án
+            console.log(`✅ Câu ${index + 1}: Giữ nguyên đáp án ${questionCopy.options[questionCopy.correctAnswer].label} - ${questionCopy.options[questionCopy.correctAnswer].text.substring(0, 50)}...`);
             
             return questionCopy;
         });
 
+    console.log(`🎯 Đã tạo đề ngẫu nhiên với ${shuffledQuestions.length} câu hỏi, giữ nguyên vị trí đáp án`);
     return shuffledQuestions;
 }
 
@@ -280,9 +228,9 @@ export function initQuiz() {
     });
 }
 
-// Test function để kiểm tra shuffle hoạt động đúng với object structure
-function testShuffle() {
-    console.log('=== TESTING SHUFFLE FUNCTIONALITY ===');
+// Test function để kiểm tra việc giữ nguyên vị trí đáp án
+function testAnswerPreservation() {
+    console.log('=== TESTING ANSWER PRESERVATION (NO SHUFFLE) ===');
     
     // Test case với cấu trúc object thực tế
     const testQuestion = {
@@ -303,7 +251,7 @@ function testShuffle() {
         correctText: testQuestion.options[testQuestion.correctAnswer].text
     });
     
-    // Test shuffle 10 lần
+    // Test deep copy 10 lần để đảm bảo không có shuffle
     for (let i = 0; i < 10; i++) {
         const questionCopy = {
             question: testQuestion.question,
@@ -314,37 +262,20 @@ function testShuffle() {
             correctAnswer: testQuestion.correctAnswer
         };
         
-        const originalCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
-        
-        const optionsWithIndex = questionCopy.options.map((option, index) => ({
-            option: option,
-            originalIndex: index
-        }));
-        
-        shuffle(optionsWithIndex);
-        
-        // Update with new labels A, B, C, D
-        questionCopy.options = optionsWithIndex.map((item, newIndex) => ({
-            label: String.fromCharCode(65 + newIndex),
-            text: item.option.text
-        }));
-        
-        questionCopy.correctAnswer = optionsWithIndex.findIndex(item => 
-            item.originalIndex === testQuestion.correctAnswer
-        );
-        
+        const originalCorrectText = testQuestion.options[testQuestion.correctAnswer].text;
         const newCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
         
         console.log(`Test ${i + 1}:`, {
-            shuffledOptions: questionCopy.options.map(opt => `${opt.label}: ${opt.text}`),
+            preservedOptions: questionCopy.options.map(opt => `${opt.label}: ${opt.text}`),
             correctAnswer: questionCopy.correctAnswer,
             correctText: newCorrectText,
-            isValid: originalCorrectText === newCorrectText
+            isValid: originalCorrectText === newCorrectText,
+            positionPreserved: testQuestion.correctAnswer === questionCopy.correctAnswer
         });
     }
     
-    console.log('=== END SHUFFLE TEST ===');
+    console.log('=== END ANSWER PRESERVATION TEST ===');
 }
 
 // Export test function để có thể gọi từ console
-window.testShuffle = testShuffle;
+window.testAnswerPreservation = testAnswerPreservation;
