@@ -550,7 +550,7 @@ export const allQuizzes = {
                     { "label": "A", "text": "Mua sắm thiết bị văn phòng" },
                     { "label": "B", "text": "Thuê dịch vụ tư vấn" },
                     { "label": "C", "text": "Thuê quyền sử dụng đất" },
-                    { "label": "D", "text": "N/A" }
+                    { "label": "D", "text": "Mua sắm vật tư y tế" }
                 ],
                 "correctAnswer": 2
             }
@@ -1611,7 +1611,7 @@ export const allQuizzes = {
                           { "label": "C", "text": "Đấu thầu rộng rãi hoặc chào hàng cạnh tranh" },
                           { "label": "D", "text": "Đấu thầu rộng rãi hoặc chỉ định thầu hoặc đàm phán giá" }
                       ],
-                      "correctAnswer": 3
+                      "correctAnswer": 2
                   },
                   {
                       "Câu": 46,
@@ -1622,7 +1622,7 @@ export const allQuizzes = {
                           { "label": "C", "text": "Đơn vị mua sắm tập trung thực hiện trách nhiệm của bên mời thầu quy định của Luật Đấu thầu" },
                           { "label": "D", "text": "Đơn vị mua sắm tập trung thực hiện trách nhiệm của tổ chuyên gia theo quy định của Luật Đấu thầu" }
                       ],
-                      "correctAnswer": 2
+                      "correctAnswer": 1
                   },
                   {
                       "Câu": 47,

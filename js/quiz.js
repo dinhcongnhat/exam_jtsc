@@ -21,7 +21,7 @@ function shuffle(array) {
 
 // Hàm tạo đề thi ngẫu nhiên (phiên bản an toàn hơn)
 function createRandomQuiz() {
-    // 1. Gom tất cả câu hỏi từ đề 1, 2, 3 một cách an toàn
+    // Gom tất cả câu hỏi từ các đề 1, 2, 3
     const allSourceQuestions = [];
     if (allQuizzes.exam1 && allQuizzes.exam1.questions) {
         allSourceQuestions.push(...allQuizzes.exam1.questions);
@@ -34,37 +34,16 @@ function createRandomQuiz() {
     }
 
     if (allSourceQuestions.length === 0) {
-        console.error("Không tìm thấy câu hỏi nguồn để tạo đề ngẫu nhiên.");
-        alert("Lỗi: Không thể tạo đề thi ngẫu nhiên do thiếu câu hỏi nguồn từ các đề 1, 2, 3.");
-        return []; // Trả về mảng rỗng để tránh lỗi
+        console.error("Không tìm thấy câu hỏi nguồn từ các đề 1, 2, 3.");
+        alert("Lỗi: Không thể tạo đề thi ngẫu nhiên do thiếu câu hỏi nguồn.");
+        return [];
     }
 
-    // 2. Xáo trộn toàn bộ câu hỏi
-    shuffle(allSourceQuestions);
+    // Xáo trộn toàn bộ câu hỏi
+    const shuffledQuestions = [...allSourceQuestions].sort(() => Math.random() - 0.5);
 
-    // 3. Lấy tối đa 100 câu hỏi
-    const randomQuestions = allSourceQuestions.slice(0, 100);
-
-    // 4. Xáo trộn đáp án cho từng câu hỏi và cập nhật đáp án đúng
-    return randomQuestions.map(q => {
-        // Kiểm tra để đảm bảo câu hỏi có options hợp lệ
-        if (!q.options || !Array.isArray(q.options) || q.options.length === 0) {
-            return q; // Bỏ qua nếu không có options
-        }
-        const newQuestion = JSON.parse(JSON.stringify(q)); // Deep copy
-        const correctOption = newQuestion.options[newQuestion.correctAnswer];
-
-        if (!correctOption) {
-            return newQuestion; // Trả về câu hỏi gốc nếu có lỗi
-        }
-
-        shuffle(newQuestion.options); // Xáo trộn các lựa chọn
-
-        const newCorrectIndex = newQuestion.options.findIndex(opt => opt.text === correctOption.text);
-        newQuestion.correctAnswer = newCorrectIndex !== -1 ? newCorrectIndex : 0; // Dự phòng nếu không tìm thấy
-
-        return newQuestion;
-    });
+    // Lấy tối đa 100 câu hỏi
+    return shuffledQuestions.slice(0, 100);
 }
 
 
@@ -111,13 +90,17 @@ function renderQuiz() {
         const questionElement = document.createElement('div');
         questionElement.id = `question-${index}`;
         questionElement.className = 'mb-8 p-6 border-b border-gray-200 last:border-b-0';
-        
-        let optionsHTML = q.options.map((opt, optIndex) => `
-            <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer bg-white shadow-sm quiz-option-label">
-                <input type="radio" name="q_${index}" value="${optIndex}" class="form-radio h-5 w-5 border-gray-300 text-[#2c5282] focus:ring-[#2c5282]">
-                <span class="text-gray-700">${String.fromCharCode(65 + optIndex)}. ${opt.text || opt}</span>
-            </label>
-        `).join('');
+
+        // Lấy thuộc tính text của mỗi option để hiển thị đúng
+        let optionsHTML = q.options.map((opt, optIndex) => {
+            const optionText = opt.text || opt; // Nếu option là object, lấy thuộc tính text, nếu không thì lấy giá trị trực tiếp
+            return `
+                <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer bg-white shadow-sm quiz-option-label">
+                    <input type="radio" name="q_${index}" value="${optIndex}" class="form-radio h-5 w-5 border-gray-300 text-[#2c5282] focus:ring-[#2c5282]">
+                    <span class="text-gray-700">${String.fromCharCode(65 + optIndex)}. ${optionText}</span>
+                </label>
+            `;
+        }).join('');
 
         questionElement.innerHTML = `
             <div class="flex justify-between items-start mb-4">
