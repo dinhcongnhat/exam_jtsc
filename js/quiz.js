@@ -43,7 +43,7 @@ function createRandomQuiz() {
     shuffle(allSourceQuestions);
 
     // 3. Lấy tối đa 100 câu hỏi
-    const randomQuestions = allSourceQuestions.slice(0, 100);
+    const randomQuestions = allSourceQuestions.slice(0, 70);
 
     // 4. Xáo trộn đáp án cho từng câu hỏi và cập nhật đáp án đúng
     return randomQuestions.map(q => {
@@ -90,10 +90,10 @@ function startQuiz(quizId) {
     if (quizId === 'exam4' || quizId === 'exam5') {
         currentQuestions = createRandomQuiz();
         if (currentQuestions.length === 0) return; // Dừng lại nếu không tạo được đề
-        quizDuration = 60 * 120; // 120 minutes
+        quizDuration = 60 * 90; // 120 minutes
     } else {
         currentQuestions = [...allQuizzes[quizId].questions]; // Create a copy
-        quizDuration = 60 * 100; // 100 minutes
+        quizDuration = 60 * 90; // 100 minutes
     }
     
     userAnswers = {};
