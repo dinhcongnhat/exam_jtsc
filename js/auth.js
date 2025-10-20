@@ -2,7 +2,6 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
 import { auth } from './firebase-config.js';
 import * as ui from './ui.js';
-import { resetChatbot } from './chatbot.js';
 
 function setupTabSwitching() {
     ui.loginTabBtn.addEventListener('click', () => {
@@ -49,10 +48,7 @@ function setupAuthForms() {
         }
     });
 
-    ui.logoutBtn.addEventListener('click', () => {
-        signOut(auth);
-        resetChatbot(); // Reset chatbot khi đăng xuất
-    });
+    ui.logoutBtn.addEventListener('click', () => signOut(auth));
 }
 
 export function initAuth() {

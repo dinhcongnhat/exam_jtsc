@@ -11,7 +11,7 @@ export let currentQuestions = [];
 
 // --- QUIZ LOGIC ---
 
-// Hàm xáo trộn mảng (Fisher-Yates shuffle) - hiện tại không sử dụng để tránh xáo trộn đáp án
+// Hàm xáo trộn mảng (Fisher-Yates shuffle)
 function shuffle(array) {
   for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1));
@@ -19,9 +19,9 @@ function shuffle(array) {
   }
 }
 
-// Hàm tạo đề thi ngẫu nhiên - giữ nguyên vị trí đáp án
+// Hàm tạo đề thi ngẫu nhiên (phiên bản an toàn hơn)
 function createRandomQuiz() {
-    // Gom tất cả câu hỏi từ các đề 1, 2, 3
+    // 1. Gom tất cả câu hỏi từ đề 1, 2, 3 một cách an toàn
     const allSourceQuestions = [];
     if (allQuizzes.exam1 && allQuizzes.exam1.questions) {
         allSourceQuestions.push(...allQuizzes.exam1.questions);
@@ -34,35 +34,14 @@ function createRandomQuiz() {
     }
 
     if (allSourceQuestions.length === 0) {
-        console.error("Không tìm thấy câu hỏi nguồn từ các đề 1, 2, 3.");
-        alert("Lỗi: Không thể tạo đề thi ngẫu nhiên do thiếu câu hỏi nguồn.");
-        return [];
+        console.error("Không tìm thấy câu hỏi nguồn để tạo đề ngẫu nhiên.");
+        alert("Lỗi: Không thể tạo đề thi ngẫu nhiên do thiếu câu hỏi nguồn từ các đề 1, 2, 3.");
+        return []; // Trả về mảng rỗng để tránh lỗi
     }
 
-    // Tạo deep copy và shuffle chỉ thứ tự câu hỏi, KHÔNG shuffle đáp án
-    const shuffledQuestions = [...allSourceQuestions]
-        .sort(() => Math.random() - 0.5)
-        .slice(0, 100)
-        .map((q, index) => {
-            // Deep copy câu hỏi và giữ nguyên vị trí đáp án
-            const questionCopy = {
-                Câu: index + 1, // Đánh số lại từ 1-100
-                question: q.question,
-                options: q.options.map(opt => ({
-                    // Deep copy từng option object - giữ nguyên label và text
-                    label: opt.label,
-                    text: opt.text
-                })),
-                correctAnswer: q.correctAnswer // Giữ nguyên vị trí đáp án đúng
-            };
-            
-            // Log để kiểm tra việc giữ nguyên đáp án
-            console.log(`✅ Câu ${index + 1}: Giữ nguyên đáp án ${questionCopy.options[questionCopy.correctAnswer].label} - ${questionCopy.options[questionCopy.correctAnswer].text.substring(0, 50)}...`);
-            
-            return questionCopy;
-        });
+    // 2. Xáo trộn toàn bộ câu hỏi
+    shuffle(allSourceQuestions);
 
-<<<<<<< HEAD
     // 3. Lấy tối đa 100 câu hỏi
     const randomQuestions = allSourceQuestions.slice(0, 70);
 
@@ -86,10 +65,6 @@ function createRandomQuiz() {
 
         return newQuestion;
     });
-=======
-    console.log(`🎯 Đã tạo đề ngẫu nhiên với ${shuffledQuestions.length} câu hỏi, giữ nguyên vị trí đáp án`);
-    return shuffledQuestions;
->>>>>>> 44e3d56731856a83183455a7cb478fcb239c353c
 }
 
 
@@ -117,21 +92,8 @@ function startQuiz(quizId) {
         if (currentQuestions.length === 0) return; // Dừng lại nếu không tạo được đề
         quizDuration = 60 * 90; // 120 minutes
     } else {
-<<<<<<< HEAD
         currentQuestions = [...allQuizzes[quizId].questions]; // Create a copy
         quizDuration = 60 * 90; // 100 minutes
-=======
-        // Tạo deep copy để tránh modification gốc
-        currentQuestions = allQuizzes[quizId].questions.map(q => ({
-            question: q.question,
-            options: q.options.map(opt => ({
-                label: opt.label,
-                text: opt.text
-            })),
-            correctAnswer: q.correctAnswer
-        }));
-        quizDuration = 60 * 100; // 100 minutes
->>>>>>> 44e3d56731856a83183455a7cb478fcb239c353c
     }
     
     userAnswers = {};
@@ -149,17 +111,13 @@ function renderQuiz() {
         const questionElement = document.createElement('div');
         questionElement.id = `question-${index}`;
         questionElement.className = 'mb-8 p-6 border-b border-gray-200 last:border-b-0';
-
-        // Lấy thuộc tính text của mỗi option để hiển thị đúng
-        let optionsHTML = q.options.map((opt, optIndex) => {
-            const optionText = opt.text || opt; // Nếu option là object, lấy thuộc tính text, nếu không thì lấy giá trị trực tiếp
-            return `
-                <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer bg-white shadow-sm quiz-option-label">
-                    <input type="radio" name="q_${index}" value="${optIndex}" class="form-radio h-5 w-5 border-gray-300 text-[#2c5282] focus:ring-[#2c5282]">
-                    <span class="text-gray-700">${String.fromCharCode(65 + optIndex)}. ${optionText}</span>
-                </label>
-            `;
-        }).join('');
+        
+        let optionsHTML = q.options.map((opt, optIndex) => `
+            <label class="flex items-center space-x-3 p-3 rounded-lg cursor-pointer bg-white shadow-sm quiz-option-label">
+                <input type="radio" name="q_${index}" value="${optIndex}" class="form-radio h-5 w-5 border-gray-300 text-[#2c5282] focus:ring-[#2c5282]">
+                <span class="text-gray-700">${String.fromCharCode(65 + optIndex)}. ${opt.text || opt}</span>
+            </label>
+        `).join('');
 
         questionElement.innerHTML = `
             <div class="flex justify-between items-start mb-4">
@@ -258,55 +216,3 @@ export function initQuiz() {
         ui.navArrowDown.classList.toggle('hidden');
     });
 }
-
-// Test function để kiểm tra việc giữ nguyên vị trí đáp án
-function testAnswerPreservation() {
-    console.log('=== TESTING ANSWER PRESERVATION (NO SHUFFLE) ===');
-    
-    // Test case với cấu trúc object thực tế
-    const testQuestion = {
-        question: "Test question?",
-        options: [
-            { label: "A", text: "Wrong option A" },
-            { label: "B", text: "Wrong option B" },
-            { label: "C", text: "CORRECT option C" },
-            { label: "D", text: "Wrong option D" }
-        ],
-        correctAnswer: 2 // "CORRECT option C"
-    };
-    
-    console.log('Original:', {
-        question: testQuestion.question,
-        options: testQuestion.options,
-        correctAnswer: testQuestion.correctAnswer,
-        correctText: testQuestion.options[testQuestion.correctAnswer].text
-    });
-    
-    // Test deep copy 10 lần để đảm bảo không có shuffle
-    for (let i = 0; i < 10; i++) {
-        const questionCopy = {
-            question: testQuestion.question,
-            options: testQuestion.options.map(opt => ({
-                label: opt.label,
-                text: opt.text
-            })),
-            correctAnswer: testQuestion.correctAnswer
-        };
-        
-        const originalCorrectText = testQuestion.options[testQuestion.correctAnswer].text;
-        const newCorrectText = questionCopy.options[questionCopy.correctAnswer].text;
-        
-        console.log(`Test ${i + 1}:`, {
-            preservedOptions: questionCopy.options.map(opt => `${opt.label}: ${opt.text}`),
-            correctAnswer: questionCopy.correctAnswer,
-            correctText: newCorrectText,
-            isValid: originalCorrectText === newCorrectText,
-            positionPreserved: testQuestion.correctAnswer === questionCopy.correctAnswer
-        });
-    }
-    
-    console.log('=== END ANSWER PRESERVATION TEST ===');
-}
-
-// Export test function để có thể gọi từ console
-window.testAnswerPreservation = testAnswerPreservation;

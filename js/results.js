@@ -9,55 +9,12 @@ export async function submitQuiz() {
     clearInterval(timerInterval);
     let correct = 0, incorrect = 0, unanswered = 0;
 
-    console.group('🏁 QUIZ EVALUATION STARTING');
-    console.log('Total questions:', currentQuestions.length);
-    console.log('User answers:', userAnswers);
-
     for (let i = 0; i < currentQuestions.length; i++) {
         if (userAnswers[i] && userAnswers[i].answer !== undefined) {
-            const userAnswer = userAnswers[i].answer;
-            const correctAnswer = currentQuestions[i].correctAnswer;
-            const isCorrect = userAnswer === correctAnswer;
-            
-            // Detailed logging for debugging
-            const question = currentQuestions[i];
-            const userSelectedText = question.options[userAnswer] ? question.options[userAnswer].text : 'INVALID';
-            const correctText = question.options[correctAnswer] ? question.options[correctAnswer].text : 'INVALID';
-            
-            console.group(`Question ${i + 1}: ${question.question.substring(0, 50)}...`);
-            console.log('Options:', question.options.map((opt, idx) => `${opt.label}(${idx}): ${opt.text.substring(0, 30)}...`));
-            console.log(`User selected: [${userAnswer}] "${userSelectedText.substring(0, 40)}..."`);
-            console.log(`Correct answer: [${correctAnswer}] "${correctText.substring(0, 40)}..."`);
-            console.log(`Evaluation: ${isCorrect ? '✅ CORRECT' : '❌ INCORRECT'}`);
-            
-            // Special case debugging for the problematic question
-            if (question.question.includes('Biện pháp nào sau đây được thực hiện trong quá trình thực hiện hợp đồng')) {
-                console.warn('🎯 FOUND PROBLEMATIC QUESTION - DETAILED ANALYSIS:');
-                console.log('All options with indices:');
-                question.options.forEach((opt, idx) => {
-                    const marker = idx === correctAnswer ? ' ← SYSTEM CORRECT' : '';
-                    const userMarker = idx === userAnswer ? ' ← USER SELECTED' : '';
-                    console.log(`  [${idx}] ${opt.label}: ${opt.text}${marker}${userMarker}`);
-                });
-                
-                if (!isCorrect) {
-                    console.error('❌ EVALUATION MISMATCH DETECTED!');
-                    console.log('Expected user to select:', `[${correctAnswer}] ${question.options[correctAnswer].label}`);
-                    console.log('User actually selected:', `[${userAnswer}] ${question.options[userAnswer].label}`);
-                }
-            }
-            console.groupEnd();
-            
-            if (isCorrect) correct++;
+            if (userAnswers[i].answer === currentQuestions[i].correctAnswer) correct++;
             else incorrect++;
-        } else {
-            console.log(`Question ${i + 1}: UNANSWERED`);
-            unanswered++;
-        }
+        } else unanswered++;
     }
-    
-    console.log(`Final Score: ${correct} correct, ${incorrect} incorrect, ${unanswered} unanswered`);
-    console.groupEnd();
     
     const user = auth.currentUser;
     if (user) {

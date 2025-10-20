@@ -41,8 +41,8 @@ body {
 }
 
 #chatbot-container {
-    width: 500px; /* Default width */
-    max-width: 90%; /* Responsive design */
+    width: 400px; /* Increased width */
+    max-width: 80%; /* Responsive design */
     transition: all 0.3s ease-in-out;
     transform: translateY(1rem);
     opacity: 0;
@@ -84,32 +84,15 @@ body {
     max-height: 500px; /* Adjust if more space is needed */
 }
 
-/* Resize grip */
-.resize-grip {
+#resize-handle {
     position: absolute;
     bottom: 0;
     right: 0;
-    width: 20px;
-    height: 20px;
+    width: 10px;
+    height: 10px;
+    background-color: #cbd5e1;
     cursor: se-resize;
-    color: rgba(0, 0, 0, 0.5);
-    font-size: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    touch-action: none;
-    z-index: 1000;
 }
-
-.resize-grip:hover {
-    color: rgba(0, 0, 0, 0.8);
-    background-color: rgba(0, 0, 0, 0.1);
-}
-
  @keyframes pulse-shadow {
             0% {
                 transform: scale(1);
@@ -132,93 +115,4 @@ body {
             animation: pulse-shadow 1.5 infinite;
         }
 
-/* Resize handles for edges and corners */
-.resize-handle {
-    position: absolute;
-    background: transparent;
-    z-index: 1000;
-    cursor: pointer;
-    opacity: 0;
-    transition: opacity 0.2s ease-in-out;
-}
-
-/* Corners */
-.resize-handle-top-left,
-.resize-handle-top-right,
-.resize-handle-bottom-left,
-.resize-handle-bottom-right {
-    width: 10px;
-    height: 10px;
-    background: rgba(0, 0, 0, 0.2);
-}
-
-.resize-handle-top-left {
-    top: -5px;
-    left: -5px;
-    cursor: nwse-resize;
-}
-
-.resize-handle-top-right {
-    top: -5px;
-    right: -5px;
-    cursor: nesw-resize;
-}
-
-.resize-handle-bottom-left {
-    bottom: -5px;
-    left: -5px;
-    cursor: nesw-resize;
-}
-
-.resize-handle-bottom-right {
-    bottom: -5px;
-    right: -5px;
-    cursor: nwse-resize;
-}
-
-/* Edges */
-.resize-handle-top,
-.resize-handle-bottom {
-    height: 8px;
-    width: calc(100% - 16px); /* Leave space for corners */
-    left: 8px;
-}
-
-.resize-handle-top {
-    top: -5px;
-    cursor: ns-resize;
-}
-
-.resize-handle-bottom {
-    bottom: -5px;
-    cursor: ns-resize;
-}
-
-.resize-handle-left,
-.resize-handle-right {
-    width: 8px;
-    height: calc(100% - 16px); /* Leave space for corners */
-    top: 8px;
-}
-
-.resize-handle-left {
-    left: -5px;
-    cursor: ew-resize;
-}
-
-.resize-handle-right {
-    right: -5px;
-    cursor: ew-resize;
-}
-
-.resize-handle:hover {
-    opacity: 1;
-}
-
-@media (max-width: 768px) {
-    #chatbot-container {
-        width: 90%;
-        max-width: 90%;
-    }
-}
-
+       
