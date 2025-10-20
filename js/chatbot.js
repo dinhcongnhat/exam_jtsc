@@ -1,4 +1,4 @@
-// js/chatbot.js
+// js/chatbot-hosting-fix.js - Ultra compatible version for cPanel
 import { pdfContent } from './pdf-content.js';
 import { allQuizzes } from './quiz-data.js';
 import { currentQuizId, currentQuestions, userAnswers } from './quiz.js';
@@ -11,22 +11,54 @@ const chatbotForm = document.getElementById('chatbot-form');
 const chatbotInput = document.getElementById('chatbot-input');
 const chatbotSendBtn = document.getElementById('chatbot-send-btn');
 const chatbotMessages = document.getElementById('chatbot-messages');
-const resizeHandle = document.getElementById('resize-handle');
 
 let chatHistory = [];
+let currentLanguage = 'vi';
+let welcomeMessageShown = false;
+
+// [Keep all other functions exactly the same as original chatbot.js]
+function switchLanguage(lang) {
+    currentLanguage = lang;
+    const langNames = {
+        vi: 'Tiếng Việt',
+        en: 'English',
+        zh: '中文',
+        ko: '한국어'
+    };
+    const messages = {
+        vi: `🌐 Đã chuyển sang ngôn ngữ: ${langNames[lang]}. Tôi có thể trả lời mọi câu hỏi của bạn!`,
+        en: `🌐 Switched to: ${langNames[lang]}. I can answer any question you have!`,
+        zh: `🌐 已切换到：${langNames[lang]}。我可以回答您的任何问题！`,
+        ko: `🌐 언어 변경: ${langNames[lang]}. 모든 질문에 답변해드릴 수 있습니다!`
+    };
+    appendMessage(messages[lang] || messages.vi, 'bot');
+}
 
 function toggleChatbot() {
     chatbotContainer.classList.toggle('hidden');
     setTimeout(() => {
         chatbotContainer.classList.toggle('open');
     }, 10);
+
+    if (!chatbotContainer.classList.contains('hidden') && !welcomeMessageShown) {
+        setTimeout(() => {
+            const welcomeMessages = {
+                vi: "JTSC xin chào! Tôi là một trợ lý được đào tạo bởi đội ngũ JTSC hỗ trợ bạn trong quá trình ôn tập. Hãy hỏi tôi bất cứ điều gì liên quan đến nội dung pháp luật và đấu thầu! Tôi cũng có thể trợ giúp bạn trong nhiều lĩnh vực khác. HÃY HỎI TÔI NẾU BẠN CẦN GIÚP ĐỠ!",
+                en: "Hello from JTSC! Feel free to ask me if you have any difficulties during the exam!",
+                zh: "JTSC问候您！考试过程中遇到任何困难都可以问我！",
+                ko: "JTSC에서 인사드립니다! 시험 중에 어려움이 있으면 언제든 물어보세요!"
+            };
+            appendMessage(welcomeMessages[currentLanguage], 'bot');
+            welcomeMessageShown = true;
+        }, 500);
+    }
 };
 
 function appendMessage(message, sender) {
     const messagesContainer = document.querySelector('#chatbot-messages .relative.z-10');
     const messageWrapper = document.createElement('div');
     messageWrapper.classList.add('flex', 'mb-4', 'max-w-full');
-    
+
     const messageElement = document.createElement('div');
     messageElement.classList.add('p-4', 'rounded-lg', 'break-words', 'shadow-sm');
 
@@ -47,10 +79,271 @@ function appendMessage(message, sender) {
             messageElement.innerHTML = formattedMessage;
         }
     }
-    
+
     messageWrapper.appendChild(messageElement);
     messagesContainer.appendChild(messageWrapper);
     chatbotMessages.scrollTop = chatbotMessages.scrollHeight;
+}
+
+// [Keep all other functions from original chatbot.js - searchRelevantContent, detectLanguage, etc.]
+function searchRelevantContent(query, content) {
+    if (!content || !query) return '';
+    
+    const nonLegalTopics = [
+        'toeic', 'ielts', 'english', 'học tập', 'giáo dục', 'khoa học', 'toán học', 'vật lý', 'hóa học',
+        'lịch sử', 'địa lý', 'văn học', 'âm nhạc', 'thể thao', 'du lịch', 'ẩm thực', 'sức khỏe',
+        'công nghệ', 'ai', 'blockchain', 'machine learning', 'programming', 'python', 'javascript',
+        'marketing', 'kinh doanh', 'quản lý', 'leadership', 'tạo câu hỏi', 'viết bài', 'giải thích'
+    ];
+    
+    const queryNormalized = query.toLowerCase()
+        .replace(/[^\w\sàáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệđìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/g, ' ');
+    
+    if (nonLegalTopics.some(topic => queryNormalized.includes(topic))) {
+        return '';
+    }
+    
+    const sections = content.split('\n\n');
+    const relevantSections = [];
+    const keywords = queryNormalized
+        .split(/\s+/)
+        .filter(word => word.length > 2);
+
+    for (const section of sections) {
+        const sectionLower = section.toLowerCase();
+        let relevanceScore = 0;
+        
+        for (const keyword of keywords) {
+            const occurrences = (sectionLower.match(new RegExp(keyword, 'g')) || []).length;
+            relevanceScore += occurrences;
+        }
+        
+        if (relevanceScore > 0) {
+            relevantSections.push({ section, score: relevanceScore });
+        }
+    }
+
+    return relevantSections
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .map(item => item.section)
+        .join('\n\n');
+}
+
+function detectLanguage(text) {
+    if (currentLanguage !== 'vi') {
+        return currentLanguage;
+    }
+
+    const vietnameseChars = /[àáảãạăắằẳẵặâấầẩẫậèéẻẽẹêếềểễệđìíỉĩịòóỏõọôốồổỗộơớờởỡợùúủũụưứừửữựỳýỷỹỵ]/i;
+    if (vietnameseChars.test(text)) {
+        return 'vi';
+    }
+
+    const englishWords = /\b(the|and|or|but|in|on|at|to|for|of|with|by|an|a|is|are|was|were|be|been|being|have|has|had|do|does|did|will|would|can|could|should|may|might|must|shall)\b/i;
+    if (englishWords.test(text)) {
+        return 'en';
+    }
+
+    const chineseChars = /[\u4e00-\u9fff]/;
+    if (chineseChars.test(text)) {
+        return 'zh';
+    }
+
+    const koreanChars = /[\uac00-\ud7af\u1100-\u11ff\u3130-\u318f]/;
+    if (koreanChars.test(text)) {
+        return 'ko';
+    }
+
+    return 'vi';
+}
+
+function createGeneralKnowledgePrompt(language, userMessage, websiteContext) {
+    const prompts = {
+        vi: {
+            persona: "Bạn là \"Trợ lý Học tập của JTSC\", một AI thông minh, thân thiện và chuyên nghiệp. Bạn có khả năng lập luận logic và trả lời mọi câu hỏi một cách chi tiết, chính xác.",
+            capabilities: [
+                "- Trả lời câu hỏi về mọi lĩnh vực: học thuật, công nghệ, khoa học, văn hóa, giáo dục, v.v.",
+                "- Lập luận có logic và cung cấp ví dụ cụ thể khi cần thiết",
+                "- Tạo ra nội dung học tập như bài tập, câu hỏi, giải thích khái niệm",
+                "- Phân tích và so sánh các khái niệm phức tạp",
+                "- Đưa ra lời khuyên thực tế và hữu ích"
+            ],
+            approach: "Hãy tư duy như một chuyên gia trong lĩnh vực được hỏi và trả lời một cách toàn diện, dễ hiểu."
+        },
+        en: {
+            persona: "You are \"JTSC Learning Assistant\", an intelligent, friendly, and professional AI. You can reason logically and answer any question comprehensively and accurately.",
+            capabilities: [
+                "- Answer questions across all domains: academic, technology, science, culture, education, etc.",
+                "- Provide logical reasoning and concrete examples when needed",
+                "- Create educational content like exercises, questions, concept explanations",
+                "- Analyze and compare complex concepts",
+                "- Offer practical and helpful advice"
+            ],
+            approach: "Think like an expert in the relevant field and provide comprehensive, easy-to-understand answers."
+        },
+        zh: {
+            persona: "您是\"JTSC学习助手\"，一个智能、友好且专业的AI。您能够进行逻辑推理并全面准确地回答任何问题。",
+            capabilities: [
+                "- 回答各个领域的问题：学术、技术、科学、文化、教育等",
+                "- 提供逻辑推理和具体示例",
+                "- 创建教育内容如练习、问题、概念解释",
+                "- 分析和比较复杂概念",
+                "- 提供实用和有用的建议"
+            ],
+            approach: "像相关领域的专家一样思考，提供全面易懂的答案。"
+        },
+        ko: {
+            persona: "당신은 \"JTSC 학습 도우미\"로, 지능적이고 친근하며 전문적인 AI입니다. 논리적으로 추론하고 모든 질문에 포괄적이고 정확하게 답변할 수 있습니다.",
+            capabilities: [
+                "- 모든 영역의 질문에 답변: 학술, 기술, 과학, 문화, 교육 등",
+                "- 논리적 추론과 구체적인 예시 제공",
+                "- 연습문제, 질문, 개념 설명 등 교육 콘텐츠 생성",
+                "- 복잡한 개념 분석 및 비교",
+                "- 실용적이고 도움이 되는 조언 제공"
+            ],
+            approach: "관련 분야의 전문가처럼 생각하고 포괄적이고 이해하기 쉬운 답변을 제공하세요."
+        }
+    };
+
+    const langData = prompts[language] || prompts.vi;
+
+    return `
+        **System Instructions:**
+        
+        **Persona:** ${langData.persona}
+        
+        **Your Capabilities:**
+        ${langData.capabilities.join('\n        ')}
+        
+        **Approach:** ${langData.approach}
+        
+        **Formatting Guidelines:**
+        - Sử dụng markdown để định dạng rõ ràng
+        - Cấu trúc câu trả lời logic với tiêu đề phụ khi cần
+        - Cung cấp ví dụ cụ thể để minh họa
+        - Nếu là câu hỏi phức tạp, chia nhỏ thành các phần dễ hiểu
+        
+        **User's Question:** "${userMessage}"
+        
+        **Instruction:** Hãy trả lời câu hỏi trên một cách thông minh, chi tiết và hữu ích nhất có thể. Đừng đề cập đến việc câu hỏi có trong tài liệu hay không - chỉ tập trung vào việc cung cấp câu trả lời tốt nhất.
+    `;
+}
+
+function createMultilingualPrompt(language, relevantContent, userMessage, websiteContext, isExplanation = false, questionInfo = null) {
+    const prompts = {
+        vi: {
+            persona: "Bạn là \"Trợ lý Học tập của JTSC\", một trợ giảng AI thân thiện, chuyên nghiệp, và luôn trả lời bằng tiếng Việt.",
+            coreTask: "Trả lời dựa trên KHỐI KIẾN THỨC được cung cấp.",
+            formatting: "Dùng markdown.",
+            knowledgeStart: "--- BẮT ĐẦU KHỐI KIẾN THỨC ---",
+            knowledgeEnd: "--- KẾT THÚC KHỐI KIẾN THỨC ---",
+            contextTitle: "Current User Context:",
+            screenLabel: "Đang ở màn hình:",
+            quizLabel: "Đang làm bài thi:",
+            progressLabel: "Tiến độ:",
+            noQuiz: "Không có",
+            notApplicable: "Không áp dụng",
+            explanationTask: "Giải thích câu hỏi trắc nghiệm dựa vào \"KHỐI KIẾN THỨC\" dưới đây.",
+            questionLabel: "Câu hỏi:",
+            optionsLabel: "Các lựa chọn:",
+            correctAnswerLabel: "Đáp án đúng:",
+            requirement: "Hãy giải thích câu trả lời cho câu hỏi trên."
+        },
+        en: {
+            persona: "You are \"JTSC Learning Assistant\", a friendly, professional AI tutor who always responds in English.",
+            coreTask: "Answer based on the provided KNOWLEDGE BASE.",
+            formatting: "Use markdown.",
+            knowledgeStart: "--- START OF KNOWLEDGE BASE ---",
+            knowledgeEnd: "--- END OF KNOWLEDGE BASE ---",
+            contextTitle: "Current User Context:",
+            screenLabel: "Current screen:",
+            quizLabel: "Taking quiz:",
+            progressLabel: "Progress:",
+            noQuiz: "None",
+            notApplicable: "Not applicable",
+            explanationTask: "Explain the multiple-choice question based on the \"KNOWLEDGE BASE\" below.",
+            questionLabel: "Question:",
+            optionsLabel: "Options:",
+            correctAnswerLabel: "Correct answer:",
+            requirement: "Please explain the answer to the question above."
+        },
+        zh: {
+            persona: "您是\"JTSC学习助手\"，一个友好、专业的人工智能导师，始终用中文回复。",
+            coreTask: "基于提供的知识库回答问题。",
+            formatting: "使用markdown格式。",
+            knowledgeStart: "--- 知识库开始 ---",
+            knowledgeEnd: "--- 知识库结束 ---",
+            contextTitle: "当前用户上下文：",
+            screenLabel: "当前页面：",
+            quizLabel: "正在考试：",
+            progressLabel: "进度：",
+            noQuiz: "无",
+            notApplicable: "不适用",
+            explanationTask: "基于下面的\"知识库\"解释选择题。",
+            questionLabel: "问题：",
+            optionsLabel: "选项：",
+            correctAnswerLabel: "正确答案：",
+            requirement: "请解释上述问题的答案。"
+        },
+        ko: {
+            persona: "당신은 \"JTSC 학습 도우미\"로, 친절하고 전문적인 AI 튜터이며 항상 한국어로 답변합니다.",
+            coreTask: "제공된 지식 기반을 기반으로 답변하십시오.",
+            formatting: "마크다운을 사용하십시오.",
+            knowledgeStart: "--- 지식 기반 시작 ---",
+            knowledgeEnd: "--- 지식 기반 종료 ---",
+            contextTitle: "현재 사용자 컨텍스트:",
+            screenLabel: "현재 화면:",
+            quizLabel: "시험 진행 중:",
+            progressLabel: "진행 상황:",
+            noQuiz: "없음",
+            notApplicable: "해당 없음",
+            explanationTask: "아래의 \"지식 기반\"을 기반으로 객관식 문제를 설명하십시오.",
+            questionLabel: "질문:",
+            optionsLabel: "선택지:",
+            correctAnswerLabel: "정답:",
+            requirement: "위 질문의 답변을 설명해 주십시오."
+        }
+    };
+
+    const langData = prompts[language] || prompts.vi;
+
+    if (isExplanation && questionInfo) {
+        const { question, options, correctAnswerIndex, correctAnswerLetter, correctOptionText } = questionInfo;
+        return `
+            **System Instructions:**
+            1. **Persona:** ${langData.persona}
+            2. **Core Task:** ${langData.explanationTask}
+            3. **Formatting:** ${langData.formatting}
+
+            ${langData.knowledgeStart}
+            ${relevantContent}
+            ${langData.knowledgeEnd}
+
+            **${langData.questionLabel}**
+            *   **${langData.questionLabel}** ${question}
+            *   **${langData.optionsLabel}** ${options.map((o, i) => `\n${String.fromCharCode(65 + i)}) ${o}`).join('')}
+            *   **${langData.correctAnswerLabel}** ${correctAnswerLetter} (${correctOptionText})
+
+            **${langData.requirement}**
+        `;
+    }
+
+    return `
+        **System Instructions:**
+        1. **Persona:** ${langData.persona}
+        2. **Core Task:** ${langData.coreTask}
+        3. **Formatting:** ${langData.formatting}
+
+        ${langData.knowledgeStart}
+        ${relevantContent || 'Không có nội dung liên quan.'}
+        ${langData.knowledgeEnd}
+
+        **${langData.contextTitle}**
+        - ${langData.screenLabel} ${websiteContext.screen}
+        - ${langData.quizLabel} ${websiteContext.quizTitle}
+        - ${langData.progressLabel} ${websiteContext.progress}
+    `;
 }
 
 async function getGeminiResponse(userMessage) {
@@ -63,6 +356,8 @@ async function getGeminiResponse(userMessage) {
     chatbotSendBtn.disabled = true;
     appendMessage('typing...', 'bot');
     let typingIndicator = document.getElementById('typing-indicator');
+
+    const userLanguage = detectLanguage(userMessage);
 
     const getCurrentScreen = () => {
         for (const screenName in ui.screens) {
@@ -109,7 +404,32 @@ async function getGeminiResponse(userMessage) {
     let requestBody;
     chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
 
-    const isExternalQuestion = !questionInfo && userMessage.match(/A\)|B\)|C\)|D\)/i);
+    const relevantContent = searchRelevantContent(userMessage, pdfContent);
+    const hasRelevantContent = relevantContent && relevantContent.trim().length > 50;
+    
+    const isExternalMultipleChoice = !questionInfo && userMessage.match(/A\)|B\)|C\)|D\)/i);
+    
+    const forceGeneralTopics = [
+        'toeic', 'ielts', 'tạo câu hỏi', 'tạo 10 câu', 'viết bài', 'cho tôi', 'hãy tạo',
+        'lịch sử việt nam', 'khoa học', 'toán học', 'giáo dục', 'học tập', 'ai là gì',
+        'blockchain', 'python', 'javascript', 'marketing', 'cách học'
+    ];
+    
+    const shouldForceGeneral = forceGeneralTopics.some(topic => 
+        userMessage.toLowerCase().includes(topic)
+    );
+    
+    const isGeneralQuestion = !questionInfo && (!hasRelevantContent || shouldForceGeneral);
+
+    console.log('Chat Debug:', {
+        userMessage,
+        questionInfo: !!questionInfo,
+        relevantContentLength: relevantContent ? relevantContent.length : 0,
+        hasRelevantContent,
+        shouldForceGeneral,
+        isExternalMultipleChoice,
+        isGeneralQuestion
+    });
 
     if (questionInfo) {
         const { question, options, correctAnswerIndex, questionNumber } = questionInfo;
@@ -127,76 +447,58 @@ async function getGeminiResponse(userMessage) {
         appendMessage('typing...', 'bot');
         typingIndicator = document.getElementById('typing-indicator');
 
-        const explanationPrompt = `
-            **System Instructions:**
-            1. **Persona:** Bạn là "Trợ lý Học tập của JTSC", một trợ giảng AI thân thiện, chuyên nghiệp, và luôn trả lời bằng tiếng Việt.
-            2. **Core Task:** Giải thích câu hỏi trắc nghiệm dựa vào "KHỐI KIẾN THỨC" dưới đây.
-            3. **Formatting:** Dùng markdown, bắt đầu bằng việc xác nhận đáp án đúng, sau đó giải thích chi tiết.
+        const relevantContent = searchRelevantContent(question, pdfContent);
 
-            --- BẮT ĐẦU KHỐI KIẾN THỨC ---
-            ${pdfContent}
-            --- KẾT THÚC KHỐI KIẾN THỨC ---
+        const questionInfoForPrompt = {
+            question,
+            options: options.map(getOptionText),
+            correctAnswerIndex,
+            correctAnswerLetter,
+            correctOptionText
+        };
 
-            **Câu hỏi cần giải thích:**
-            *   **Câu hỏi:** ${question}
-            *   **Các lựa chọn:** ${options.map((o, i) => `\n${String.fromCharCode(65 + i)}) ${getOptionText(o)}`).join('')}
-            *   **Đáp án đúng:** ${correctAnswerLetter} (${correctOptionText})
-
-            **Yêu cầu:** Hãy giải thích câu trả lời cho câu hỏi trên.
-        `;
+        const explanationPrompt = createMultilingualPrompt(userLanguage, relevantContent, userMessage, websiteContext, true, questionInfoForPrompt);
         
         requestBody = {
             contents: [{ role: "user", parts: [{ text: explanationPrompt }] }]
         };
 
-    } else if (isExternalQuestion) {
-        if (typingIndicator) typingIndicator.parentElement.remove();
-        appendMessage('Đây là câu hỏi không thuộc tài liệu, mình sẽ trả lời dựa trên kiến thức chung nhé!', 'bot');
-        appendMessage('typing...', 'bot');
-        typingIndicator = document.getElementById('typing-indicator');
-
+    } else if (isExternalMultipleChoice) {
         const externalQuestionPrompt = `
             **System Instructions:**
-            1. **Persona:** Bạn là một trợ lý AI chuyên gia, trả lời bằng tiếng Việt.
-            2. **Core Task:** Bạn đã nhận được một câu hỏi trắc nghiệm không có trong tài liệu học tập được cung cấp. Nhiệm vụ của bạn là:
-                a. Phân tích câu hỏi và các lựa chọn.
-                b. Xác định câu trả lời đúng nhất dựa trên kiến thức chung của bạn.
-                c. Trình bày câu trả lời theo định dạng: "**Đáp án:** [A/B/C/D].\n\n**Giải thích:** [Giải thích lý do tại sao đáp án đó đúng và các đáp án khác sai]."
-            3. **Formatting:** Sử dụng markdown cho rõ ràng.
-
-            **Câu hỏi từ người dùng:**
-            "${userMessage}"
-
-            **Yêu cầu:** Hãy trả lời câu hỏi trên theo hướng dẫn.
+            
+            **Persona:** Bạn là "Trợ lý Học tập của JTSC", một AI thông minh và chuyên nghiệp, luôn trả lời bằng ngôn ngữ của người dùng.
+            
+            **Task:** Phân tích câu hỏi trắc nghiệm và đưa ra câu trả lời chính xác nhất dựa trên kiến thức của bạn.
+            
+            **Format yêu cầu:**
+            - **Đáp án:** [A/B/C/D]
+            - **Giải thích:** Giải thích chi tiết tại sao đáp án này đúng và tại sao các đáp án khác sai
+            - Sử dụng markdown để định dạng rõ ràng
+            
+            **Câu hỏi:** "${userMessage}"
+            
+            **Hướng dẫn:** Hãy phân tích kỹ lưỡng và đưa ra câu trả lời chính xác nhất với lời giải thích logic.
         `;
 
         requestBody = {
             contents: [{ role: "user", parts: [{ text: externalQuestionPrompt }] }]
         };
 
+    } else if (isGeneralQuestion) {
+        const generalQuestionPrompt = createGeneralKnowledgePrompt(userLanguage, userMessage, websiteContext);
+        
+        requestBody = {
+            contents: [{ role: "user", parts: [{ text: generalQuestionPrompt }] }]
+        };
+
     } else {
+        const systemPrompt = createMultilingualPrompt(userLanguage, relevantContent, userMessage, websiteContext);
+
         requestBody = {
             contents: chatHistory,
             systemInstruction: {
-                parts: [{
-                    text: `
-                    **System Instructions:**
-                    1. **Persona:** Bạn là "Trợ lý Học tập của JTSC", một AI thân thiện, chuyên nghiệp, trả lời bằng tiếng Việt.
-                    2. **Core Task:**
-                       - **ƯU TIÊN 1:** Trả lời câu hỏi của người dùng dựa vào "KHỐI KIẾN THỨC" dưới đây.
-                       - **ƯU TIÊN 2:** Nếu không tìm thấy, hãy dùng kiến thức chung để trả lời.
-                    3. **Formatting:** Dùng markdown.
-
-                    --- BẮT ĐẦU KHỐI KIẾN THỨC ---
-                    ${pdfContent}
-                    --- KẾT THÚC KHỐI KIẾN THỨC ---
-
-                    **Current User Context:**
-                    - Đang ở màn hình: ${websiteContext.screen}
-                    - Đang làm bài thi: ${websiteContext.quizTitle}
-                    - Tiến độ: ${websiteContext.progress}
-                    `
-                }]
+                parts: [{ text: systemPrompt }]
             }
         };
     }
@@ -211,23 +513,20 @@ async function getGeminiResponse(userMessage) {
                     generationConfig: { temperature: 0.2, topK: 40, topP: 0.95, maxOutputTokens: 1024 }
                 })
             });
-            
+
             if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-            
+
             const data = await response.json();
-            
+
             if (data.candidates?.[0]?.content?.parts?.[0]) {
                 const botMessage = data.candidates[0].content.parts[0].text;
-                // Only add the actual bot response to history
-                if (!isExternalQuestion && !questionInfo) {
+                
+                if (!isExternalMultipleChoice && !questionInfo && !isGeneralQuestion) {
                     chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
                 } else {
-                    // For special cases, we pop the user message and add both to keep history clean
                     chatHistory.pop();
-                    chatHistory.push({ role: "user", parts: [{ text: userMessage }] });
-                    chatHistory.push({ role: "model", parts: [{ text: botMessage }] });
                 }
-                
+
                 if (typingIndicator) typingIndicator.parentElement.remove();
                 appendMessage(botMessage, 'bot');
                 chatbotSendBtn.disabled = false;
@@ -247,11 +546,10 @@ async function getGeminiResponse(userMessage) {
             }
         }
     }
-    
+
     chatbotSendBtn.disabled = false;
 }
 
-// Unchanged functions below...
 function setupDraggableChatbot() {
     let isDragging = false;
     let offsetX, offsetY;
@@ -280,37 +578,148 @@ function setupDraggableChatbot() {
     });
 }
 
-function setupResizableChatbot() {
-    resizeHandle.addEventListener('mousedown', (e) => {
-        e.preventDefault();
-        chatbotContainer.style.transition = 'none';
-        const minWidth = 300, minHeight = 400;
-        const startWidth = chatbotContainer.offsetWidth;
-        const startHeight = chatbotContainer.offsetHeight;
-        const startX = e.clientX;
-        const startY = e.clientY;
+function resetChatbot() {
+    chatHistory = [];
+    welcomeMessageShown = false;
+    currentLanguage = 'vi';
+    const messagesContainer = document.querySelector('#chatbot-messages .relative.z-10');
+    if (messagesContainer) {
+        messagesContainer.innerHTML = '';
+    }
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+        languageSelector.value = 'vi';
+    }
+}
 
-        function onMouseMove(e) {
-            const width = Math.max(minWidth, startWidth + (e.clientX - startX));
-            const height = Math.max(minHeight, startHeight + (e.clientY - startY));
-            chatbotContainer.style.width = `${width}px`;
-            chatbotContainer.style.height = `${height}px`;
-        }
+// Inline resize functionality for chatbot
+let isResizeEnabled = true;
 
-        function onMouseUp() {
-            chatbotContainer.style.transition = '';
-            document.removeEventListener('mousemove', onMouseMove);
-            document.removeEventListener('mouseup', onMouseUp);
-        }
+function setupUltraSimpleResize() {
+    console.log('🔧 Setting up ULTRA SIMPLE resize...');
 
-        document.addEventListener('mousemove', onMouseMove);
-        document.addEventListener('mouseup', onMouseUp);
+    const chatbotContainer = document.getElementById('chatbot-container');
+    if (!chatbotContainer) {
+        console.error('❌ Chatbot container not found!');
+        return;
+    }
+
+    let isResizing = false;
+    let resizeDirection = '';
+    let startMouseX = 0;
+    let startMouseY = 0;
+    let startWidth = 0;
+    let startHeight = 0;
+    let startLeft = 0;
+    let startTop = 0;
+    let animationFrame;
+
+    const handles = chatbotContainer.querySelectorAll('.resize-handle');
+    handles.forEach(handle => {
+        handle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            resizeDirection = handle.dataset.direction;
+            startMouseX = e.clientX;
+            startMouseY = e.clientY;
+
+            const rect = chatbotContainer.getBoundingClientRect();
+            startWidth = rect.width;
+            startHeight = rect.height;
+            startLeft = rect.left;
+            startTop = rect.top;
+
+            document.addEventListener('mousemove', throttleResize);
+            document.addEventListener('mouseup', stopResizing);
+        });
     });
+
+    function throttleResize(e) {
+        if (animationFrame) return;
+        animationFrame = requestAnimationFrame(() => {
+            doResize(e.clientX, e.clientY);
+            animationFrame = null;
+        });
+    }
+
+    function doResize(clientX, clientY) {
+        if (!isResizing) return;
+
+        const deltaX = clientX - startMouseX;
+        const deltaY = clientY - startMouseY;
+
+        const minW = 280;
+        const minH = 350;
+        const maxW = window.innerWidth - 50;
+        const maxH = window.innerHeight - 50;
+
+        let newWidth = startWidth;
+        let newHeight = startHeight;
+        let newLeft = startLeft;
+        let newTop = startTop;
+
+        switch (resizeDirection) {
+            case 'bottom-right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                break;
+            case 'bottom-left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                newLeft = startLeft + (startWidth - newWidth);
+                break;
+            case 'top-right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                newTop = startTop + (startHeight - newHeight);
+                break;
+            case 'top-left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                newLeft = startLeft + (startWidth - newWidth);
+                newTop = startTop + (startHeight - newHeight);
+                break;
+            case 'top':
+                newHeight = Math.max(minH, Math.min(maxH, startHeight - deltaY));
+                newTop = startTop + (startHeight - newHeight);
+                break;
+            case 'bottom':
+                newHeight = Math.max(minH, Math.min(maxH, startHeight + deltaY));
+                break;
+            case 'left':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth - deltaX));
+                newLeft = startLeft + (startWidth - newWidth);
+                break;
+            case 'right':
+                newWidth = Math.max(minW, Math.min(maxW, startWidth + deltaX));
+                break;
+        }
+
+        chatbotContainer.style.width = newWidth + 'px';
+        chatbotContainer.style.height = newHeight + 'px';
+        chatbotContainer.style.left = newLeft + 'px';
+        chatbotContainer.style.top = newTop + 'px';
+    }
+
+    function stopResizing() {
+        isResizing = false;
+        document.removeEventListener('mousemove', throttleResize);
+        document.removeEventListener('mouseup', stopResizing);
+    }
 }
 
 export function initChatbot() {
+    console.log('🔧 Initializing chatbot with hosting fix...');
+    
     ui.chatbotToggleBtn.addEventListener('click', toggleChatbot);
     chatbotCloseBtn.addEventListener('click', toggleChatbot);
+
+    const languageSelector = document.getElementById('language-selector');
+    if (languageSelector) {
+        languageSelector.value = currentLanguage;
+        languageSelector.addEventListener('change', (e) => {
+            switchLanguage(e.target.value);
+        });
+    }
 
     chatbotForm.addEventListener('submit', (e) => {
         e.preventDefault();
@@ -323,5 +732,65 @@ export function initChatbot() {
     });
 
     setupDraggableChatbot();
-    setupResizableChatbot();
+    
+    // Setup resize functionality
+    setupUltraSimpleResize();
+
+    const resizeHandles = document.querySelectorAll('.resize-handle');
+    let isResizing = false;
+    let currentDirection = '';
+    let startX, startY, startWidth, startHeight;
+    let animationFrame;
+
+    resizeHandles.forEach(handle => {
+        handle.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            currentDirection = handle.dataset.direction;
+            startX = e.clientX;
+            startY = e.clientY;
+            const rect = chatbotContainer.getBoundingClientRect();
+            startWidth = rect.width;
+            startHeight = rect.height;
+            document.addEventListener('mousemove', throttleResize);
+            document.addEventListener('mouseup', stopResizing);
+        });
+    });
+
+    function throttleResize(e) {
+        if (animationFrame) return;
+        animationFrame = requestAnimationFrame(() => {
+            resizeChatbot(e);
+            animationFrame = null;
+        });
+    }
+
+    function resizeChatbot(e) {
+        if (!isResizing) return;
+
+        const dx = e.clientX - startX;
+        const dy = e.clientY - startY;
+
+        if (currentDirection.includes('right')) {
+            chatbotContainer.style.width = `${startWidth + dx}px`;
+        }
+        if (currentDirection.includes('left')) {
+            chatbotContainer.style.width = `${startWidth - dx}px`;
+            chatbotContainer.style.left = `${chatbotContainer.offsetLeft + dx}px`;
+        }
+        if (currentDirection.includes('bottom')) {
+            chatbotContainer.style.height = `${startHeight + dy}px`;
+        }
+        if (currentDirection.includes('top')) {
+            chatbotContainer.style.height = `${startHeight - dy}px`;
+            chatbotContainer.style.top = `${chatbotContainer.offsetTop + dy}px`;
+        }
+    }
+
+    function stopResizing() {
+        isResizing = false;
+        document.removeEventListener('mousemove', throttleResize);
+        document.removeEventListener('mouseup', stopResizing);
+    }
 }
+
+export { resetChatbot };
